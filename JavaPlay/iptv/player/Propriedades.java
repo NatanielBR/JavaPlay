@@ -30,21 +30,28 @@ import java.io.OutputStream;
 import java.util.Properties;
 
 /**
- *
+ * Classe para obter as propriedades
  * @author Nataniel
  */
 public class Propriedades {
 
     public static Propriedades instancia;
-    private final String arquivo = "data.properties";
+    private final String arquivo = "JavaPlay.properties";
     
     public Propriedades() {
         instancia = this;
     }
+    /**
+     * Metodo para obter o diretorio
+     * @return
+     */
     public String getDir() {
         return carregar().getProperty("dir", null);
     }
-
+    /**
+     * Metodo para alterar o diretorio
+     * @param nv
+     */
     public void setDir(String nv) {
         Properties prop = carregar();
         prop.put("dir", nv);
@@ -54,20 +61,7 @@ public class Propriedades {
             ex.printStackTrace();
         }
     }
-    public String[] getLista(){
-        return carregar().getProperty("arqs", "").split("|");
-
-    }
-    public void setLista(String arq){
-        Properties prop = carregar();
-        prop.merge("dir",arq, (o, o2) -> o+"|"+o2);
-        try {
-            prop.store(saida(), "");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-    }
+    
     private Properties carregar() {
         Properties prop = new Properties();
         File f = new File(arquivo);

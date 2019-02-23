@@ -43,6 +43,7 @@ import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 
 /**
+ * Player do vlc
  * @author Nataniel
  */
 public class Player extends JFrame {
@@ -69,6 +70,7 @@ public class Player extends JFrame {
 		setSize(500, 470);
 		comp.setLocation(0, 0);
 		setLayout(new BorderLayout());
+		
 		play.events().addMediaPlayerEventListener((new MediaPlayerEventAdapter() {
 			@Override
 			public void lengthChanged(MediaPlayer mediaPlayer, long newLength) {
@@ -85,7 +87,6 @@ public class Player extends JFrame {
 			@Override
 			public void positionChanged(MediaPlayer mediaPlayer, float newPosition) {
 				progresso.modificarInicio(status.time());
-				int posInt = (int) (newPosition * 1000);
 				progresso.modificarBarra(status.time());
 			}
 		}));
@@ -94,7 +95,6 @@ public class Player extends JFrame {
 			public void windowOpened(WindowEvent we) {
 				super.windowOpened(we);
 				play.media().play(arq.getAbsolutePath());
-//                antiga.setEnabled(false);
 			}
 
 			@Override
@@ -108,8 +108,8 @@ public class Player extends JFrame {
 				super.windowClosing(e);
 			}
 		});
+		
 		comp.videoSurfaceComponent().addMouseWheelListener((a) -> {
-			System.out.println(audio.volume());
 			int vol = audio.volume() - (a.getWheelRotation() * (ismult ? mult : 1));
 			if (vol > 200) {
 				vol = 200;
@@ -118,6 +118,7 @@ public class Player extends JFrame {
 			}
 			audio.setVolume(vol);
 		});
+		
 		comp.videoSurfaceComponent().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -140,15 +141,14 @@ public class Player extends JFrame {
 		add(comp, BorderLayout.CENTER);
 		add(inferior, BorderLayout.SOUTH);
 	}
-
 	public Player(File arq, Consumer<Long[]> con) {
 		this(arq, con, 0);
 	}
-
-	private void MudarVolume(int volume, boolean aumento) {
-		audio.setVolume(audio.volume() + (volume * (aumento ? mult : 1)));
-	}
-
+	/**
+	 * Classe que possui os controle de Pause e Volume (este só é controlado pelo mouse)
+	 * @author natan
+	 *
+	 */
 	private class Controles extends JPanel {
 
 		private String[] strs = new String[] { "Pausar", "Volume: " };
@@ -164,17 +164,24 @@ public class Player extends JFrame {
 			add(lb, BorderLayout.EAST);
 			add(bt1, BorderLayout.WEST);
 		}
-
+		/**
+		 * Metodo para alterar o texto do volume
+		 * @param novo
+		 */
 		public void alterarVolume(int novo) {
 			lb.setText(strs[1] + novo);
 		}
 	}
-
+	/**
+	 * Classe onde possui as JLabels inicio e fim  (ini e fim) e a barra de progresso
+	 * @author natan
+	 *
+	 */
 	private class Progresso extends JPanel {
 
 		private JLabel ini, fim;
 		private LongJSlider barra;
-
+		
 		public LongJSlider getBarra() {
 			return barra;
 		}
@@ -191,7 +198,7 @@ public class Player extends JFrame {
 			barra.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					barra.setValueIsAdjusting(false);
+					//para alterar o tempo no video
 					controle.setTime(barra.getLongValue());
 					controle.play();
 				}
@@ -199,7 +206,6 @@ public class Player extends JFrame {
 				@Override
 				public void mousePressed(MouseEvent e) {
 					controle.pause();
-					barra.setValueIsAdjusting(true);
 				}
 			});
 			setLayout(new BorderLayout());
@@ -207,20 +213,33 @@ public class Player extends JFrame {
 			add(barra, BorderLayout.CENTER);
 			add(fim, BorderLayout.EAST);
 		}
-
+		/**
+		 * Metodo para alterar o texto do fim do video
+		 * @param ms
+		 */
 		public void modificarFim(long ms) {
 			barra.setLongMaximum(ms);
 			this.fim.setText(tempoDinamico(ms));
 		}
-
+		/**
+		 * Metodo para alterar o texto do inicio do video
+		 * @param ms
+		 */
 		public void modificarInicio(long ms) {
 			this.ini.setText(tempoDinamico(ms));
 		}
-
+		/**
+		 * Metodo para alterar o progresso do video
+		 * @param val
+		 */
 		public void modificarBarra(long val) {
 			barra.setLongValue(val);
 		}
-
+		/**
+		 * Metodo que converte os milisegundos para hora:minuto:segundo
+		 * @param ms
+		 * @return
+		 */
 		private String tempoDinamico(long ms) {
 			int secs, mins, horas;
 			horas = (int) (ms / 3600000);

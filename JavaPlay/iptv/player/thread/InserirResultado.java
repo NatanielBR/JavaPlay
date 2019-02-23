@@ -14,30 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package iptv.player;
+package iptv.player.thread;
 
-import javax.swing.JOptionPane;
-
-import iptv.player.thread.BancoComunicador;
-import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery;
-
+import java.io.File;
 /**
+ * Classe quase depreceada para inserir resultado
+ * @author natan
  *
- * @author Nataniel
  */
-public class JavaPlay {
-	/**
-	 * @param args the command line arguments
-	 */
-	public static void main(String[] args) {
-		new Propriedades();
-		new NativeDiscovery().discover();
-		new BancoComunicador();
-		new Thread(new Interface()).start();
-		
+public class InserirResultado extends Resultado{
+
+	public InserirResultado(int ultimoTempo, File arquivo) {
+		super(ultimoTempo, arquivo);
+		// TODO Auto-generated constructor stub
 	}
-	public static void error(Exception er) {
-		JOptionPane.showMessageDialog(null, er);
-		System.exit(3);
-	}
+
 }

@@ -17,9 +17,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
 
 /**
-* An extension of JSlider that uses Long for its values.
+* An extension of JSlider that uses Double for its values.
 * 
-* Changed
+* Changed (Alterado)
 * 
 * @since Trick 10
 */

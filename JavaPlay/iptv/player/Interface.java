@@ -22,7 +22,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -43,18 +45,22 @@ import iptv.player.thread.Resultado;
 import uk.co.caprica.vlcj.filefilters.VideoFileFilter;
 
 /**
- *
+ * Interface do programa
  * @author natan
  */
-public class Interface extends javax.swing.JFrame implements Runnable {
-	public Object[] addConteudo() {
+public class Interface extends javax.swing.JFrame {
+	/**
+	 * Metodo que retorna uma lista de JProgressBar
+	 * @return
+	 */
+	public JProgressBar[] addConteudo() {
 		Propriedades prod = Propriedades.instancia;
 		String dir = prod.getDir();
 		if (dir == null) {
 			dir = escolherDiretorio();
 			prod.setDir(dir);
 		}
-		List<File> it = getFileDir(dir).collect(Collectors.toList());
+		List<File> it = Arrays.asList(parser(dir).toArray(new File[0]));
 		Collections.sort(it);
 		List<JProgressBar> barras = new ArrayList<>();
 		it.forEach((info)->{
@@ -83,9 +89,14 @@ public class Interface extends javax.swing.JFrame implements Runnable {
 //            bt.setOpaque(false);
 			barras.add(barr);
 		});
-		return barras.toArray();
+		return barras.toArray(new JProgressBar[0]);
 	}
-
+	/**
+	 * Metodo que retorna o diretorio da String
+	 * 
+	 * Ele é executado na primeira vez que é executado
+	 * @return
+	 */
 	public String escolherDiretorio() {
 		String dir = null;
 		JFileChooser chooser = new JFileChooser();
@@ -100,17 +111,14 @@ public class Interface extends javax.swing.JFrame implements Runnable {
 		}
 		return dir;
 	}
-
-	private Stream<File> getFileDir(String di) {
-		return parser(di);
-	}
-
-	private Stream<File> parser(String dir) {
+	private Collection<File> parser(String dir) {
 		Collection<File> files = FileUtils.listFiles(new File(dir), new VideoFileFilter().getExtensions(), true);
-		return files.stream().sorted();
+		return files;
 	}
-
-	public void run() {
+	/**
+	 * onde tudo irá rodar
+	 */
+	public Interface() {
 		setTitle("JavaPlay");
 		JPanel pan = new JPanel();
 		JScrollPane pane = new JScrollPane(pan);
@@ -118,9 +126,9 @@ public class Interface extends javax.swing.JFrame implements Runnable {
 		GridLayout lay = new GridLayout(0, 1);
 		lay.setVgap(20);
 		pan.setLayout(lay);
-		Object[] obs = addConteudo();
-		for (Object o : obs) {
-			JProgressBar bar = (JProgressBar) o;
+		JProgressBar[] obs = addConteudo();
+		for (JProgressBar o : obs) {
+			JProgressBar bar = o;
 			pan.add(bar);
 		}
 		add(pane);

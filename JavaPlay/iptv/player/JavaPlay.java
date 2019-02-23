@@ -14,23 +14,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package iptv.player.thread;
+package iptv.player;
 
-import java.io.File;
+import javax.swing.JOptionPane;
 
-public class Resultado{
+import iptv.player.thread.BancoComunicador;
+import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery;
 
-	private final  int ultimoTempo;
-	private final File arquivo;
-	public Resultado(int ultimoTempo, File file) {
-		this.ultimoTempo = ultimoTempo;
-		this.arquivo = file;
+/**
+ * O inicio de tudo :)
+ * @author Nataniel
+ */
+public class JavaPlay {
+	/**
+	 * @param args the command line arguments
+	 */
+	public static void main(String[] args) {
+		new Propriedades();
+		new NativeDiscovery().discover();
+		new BancoComunicador();
+		new Interface();
+		
 	}
-	public File getArquivo() {
-		return arquivo;
+	/**
+	 * Metodo para exibir uma mensagem de erro, nenhum será tolerado e a aplicação irá sair
+	 * @param er erro
+	 */
+	public static void error(Exception er) {
+		JOptionPane.showMessageDialog(null, er);
+		System.exit(3);
 	}
-	public int getUltimoTempo() {
-		return ultimoTempo;
-	}
-	
 }

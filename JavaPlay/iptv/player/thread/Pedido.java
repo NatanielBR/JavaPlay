@@ -16,13 +16,28 @@
  ******************************************************************************/
 package iptv.player.thread;
 
-import java.io.File;
-
-public class InserirResultado extends Resultado{
-
-	public InserirResultado(int ultimoTempo, File arquivo) {
-		super(ultimoTempo, arquivo);
-		// TODO Auto-generated constructor stub
+import java.util.function.Consumer;
+/**
+ * Classe para realizar o pedido, depreceada.
+ * @author natan
+ * @deprecated
+ * @param <T>
+ */
+public class Pedido<T> {
+	private Object valor;
+	private Consumer<Object> fim;
+	public Pedido(Consumer<Object> cons) {
+		this.valor = valor;
+		fim = cons;
 	}
-
+	public Consumer<Object> getResposta(){
+		return fim;
+	}
+	public T getValor() {
+		return (T) valor;
+	}
+	public void setValor(T valor) {
+		this.valor = valor;
+	}
+	
 }

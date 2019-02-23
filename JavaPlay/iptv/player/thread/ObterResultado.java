@@ -17,7 +17,11 @@
 package iptv.player.thread;
 
 import java.io.File;
-
+/**
+ * Classe quase depreceada para obter o resultado
+ * @author natan
+ *
+ */
 public class ObterResultado{
 	private final File arq;
 	public ObterResultado(File arquivo) {

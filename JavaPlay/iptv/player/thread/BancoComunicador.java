@@ -16,7 +16,6 @@
  ******************************************************************************/
 package iptv.player.thread;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -24,7 +23,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import iptv.player.JavaPlay;
-
+/**
+ * Classe para se comunicar com o banco de dados.
+ * @author natan
+ *
+ */
 public class BancoComunicador{
 	public static BancoComunicador instancia;
 	private Connection con;
@@ -39,7 +42,10 @@ public class BancoComunicador{
 			JavaPlay.error(e);
 		}
 	}
-
+	/**
+	 * Metodo para inserir o tempo e o arquivo  no banco de dados
+	 * @param inres
+	 */
 	public void inserirResultado(InserirResultado inres) {
 		PreparedStatement pre;
 		try {
@@ -55,7 +61,11 @@ public class BancoComunicador{
 		}
 
 	}
-
+	/**
+	 * Metodo para obter o resultado, tempo e arquivo do banco de dados
+	 * @param obter
+	 * @return
+	 */
 	public Resultado obterResultado(ObterResultado obter) {
 		
 		try {

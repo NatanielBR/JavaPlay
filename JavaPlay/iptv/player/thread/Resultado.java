@@ -16,23 +16,25 @@
  ******************************************************************************/
 package iptv.player.thread;
 
-import java.util.function.Consumer;
+import java.io.File;
+/**
+ * Classe para simbolizar o Resultado
+ * @author natan
+ *
+ */
+public class Resultado{
 
-public class Pedido<T> {
-	private Object valor;
-	private Consumer<Object> fim;
-	public Pedido(Consumer<Object> cons) {
-		this.valor = valor;
-		fim = cons;
+	private final  int ultimoTempo;
+	private final File arquivo;
+	public Resultado(int ultimoTempo, File file) {
+		this.ultimoTempo = ultimoTempo;
+		this.arquivo = file;
 	}
-	public Consumer<Object> getResposta(){
-		return fim;
+	public File getArquivo() {
+		return arquivo;
 	}
-	public T getValor() {
-		return (T) valor;
-	}
-	public void setValor(T valor) {
-		this.valor = valor;
+	public int getUltimoTempo() {
+		return ultimoTempo;
 	}
 	
 }
