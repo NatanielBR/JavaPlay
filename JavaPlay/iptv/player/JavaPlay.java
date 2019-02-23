@@ -16,6 +16,9 @@
  ******************************************************************************/
 package iptv.player;
 
+import java.io.File;
+import java.util.Arrays;
+
 import javax.swing.JOptionPane;
 
 import iptv.player.thread.BancoComunicador;
@@ -33,7 +36,10 @@ public class JavaPlay {
 		new Propriedades();
 		new NativeDiscovery().discover();
 		new BancoComunicador();
-		new Interface();
+//		new Interface();
+		new Player(new File("/home/natan/Animes/[EA]Log_Horizon_01_[1280x720][BDRIP][Hi10p][758A8215].mkv"), (a)->{
+			System.out.println(Arrays.toString(a));
+		}).setVisible(true);
 		
 	}
 	/**
