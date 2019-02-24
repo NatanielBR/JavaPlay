@@ -14,20 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package iptv.player.thread;
+package javaplay.thread;
 
 import java.io.File;
 /**
- * Classe quase depreceada para obter o resultado
+ * Classe quase depreceada para inserir resultado
  * @author natan
  *
  */
-public class ObterResultado{
-	private final File arq;
-	public ObterResultado(File arquivo) {
-		arq = arquivo;
+public class InserirResultado extends Resultado{
+
+	public InserirResultado(int ultimoTempo, File arquivo) {
+		super(ultimoTempo, arquivo);
+		// TODO Auto-generated constructor stub
 	}
-	public File getArq() {
-		return arq;
-	}
+
 }

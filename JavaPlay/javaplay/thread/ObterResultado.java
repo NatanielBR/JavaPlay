@@ -14,30 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package iptv.player.thread;
+package javaplay.thread;
 
-import java.util.function.Consumer;
+import java.io.File;
 /**
- * Classe para realizar o pedido, depreceada.
+ * Classe quase depreceada para obter o resultado
  * @author natan
- * @deprecated
- * @param <T>
+ *
  */
-public class Pedido<T> {
-	private Object valor;
-	private Consumer<Object> fim;
-	public Pedido(Consumer<Object> cons) {
-		this.valor = valor;
-		fim = cons;
+public class ObterResultado{
+	private final File arq;
+	public ObterResultado(File arquivo) {
+		arq = arquivo;
 	}
-	public Consumer<Object> getResposta(){
-		return fim;
+	public File getArq() {
+		return arq;
 	}
-	public T getValor() {
-		return (T) valor;
-	}
-	public void setValor(T valor) {
-		this.valor = valor;
-	}
-	
 }

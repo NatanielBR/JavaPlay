@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package iptv.player.thread;
+package javaplay.thread;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,7 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import iptv.player.JavaPlay;
+import javaplay.JavaPlay;
 /**
  * Classe para se comunicar com o banco de dados.
  * @author natan

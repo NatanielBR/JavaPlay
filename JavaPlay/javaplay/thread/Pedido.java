@@ -14,19 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package iptv.player.thread;
+package javaplay.thread;
 
-import java.io.File;
+import java.util.function.Consumer;
 /**
- * Classe quase depreceada para inserir resultado
+ * Classe para realizar o pedido, depreceada.
  * @author natan
- *
+ * @deprecated
+ * @param <T>
  */
-public class InserirResultado extends Resultado{
-
-	public InserirResultado(int ultimoTempo, File arquivo) {
-		super(ultimoTempo, arquivo);
-		// TODO Auto-generated constructor stub
+public class Pedido<T> {
+	private Object valor;
+	private Consumer<Object> fim;
+	public Pedido(Consumer<Object> cons) {
+		this.valor = valor;
+		fim = cons;
 	}
-
+	public Consumer<Object> getResposta(){
+		return fim;
+	}
+	public T getValor() {
+		return (T) valor;
+	}
+	public void setValor(T valor) {
+		this.valor = valor;
+	}
+	
 }

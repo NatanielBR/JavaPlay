@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package iptv.player;
+package javaplay;
 
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
@@ -39,9 +39,11 @@ import javax.swing.JScrollPane;
 
 import org.apache.commons.io.FileUtils;
 
-import iptv.player.thread.BancoComunicador;
-import iptv.player.thread.ObterResultado;
-import iptv.player.thread.Resultado;
+import javaplay.outros.Propriedades;
+import javaplay.player.Player;
+import javaplay.thread.BancoComunicador;
+import javaplay.thread.ObterResultado;
+import javaplay.thread.Resultado;
 import uk.co.caprica.vlcj.filefilters.VideoFileFilter;
 
 /**
@@ -73,9 +75,8 @@ public class Interface extends javax.swing.JFrame {
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					Resultado res = BancoComunicador.instancia.obterResultado(new ObterResultado(info));
-					Consumer<Long[]> ina = (a)->{
-						int porc = (int) ((100*a[0])/a[1]);
-						barr.setValue(porc);
+					Consumer<Integer> ina = (a)->{
+						barr.setValue(a);
 					};
 					Player play = barr.getValue()>0?new Player(info,ina,res.getUltimoTempo()):new Player(info,ina);
 					play.setVisible(true);
