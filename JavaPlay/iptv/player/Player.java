@@ -17,23 +17,30 @@
 package iptv.player;
 
 import java.awt.BorderLayout;
+import java.awt.Point;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import iptv.player.thread.BancoComunicador;
 import iptv.player.thread.InserirResultado;
 import uk.co.caprica.vlcj.player.base.AudioApi;
+import uk.co.caprica.vlcj.player.base.ChapterApi;
+import uk.co.caprica.vlcj.player.base.ChapterDescription;
 import uk.co.caprica.vlcj.player.base.ControlsApi;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
@@ -44,6 +51,7 @@ import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 
 /**
  * Player do vlc
+ * 
  * @author Nataniel
  */
 public class Player extends JFrame {
@@ -53,6 +61,7 @@ public class Player extends JFrame {
 	private ControlsApi controle;
 	private StatusApi status;
 	private AudioApi audio;
+	private ChapterApi chapter;
 	private int mult = 10;
 	private boolean ismult = false;
 
@@ -65,18 +74,19 @@ public class Player extends JFrame {
 		status = play.status();
 		controle = play.controls();
 		audio = play.audio();
+		chapter = play.chapters();
 
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setSize(500, 470);
 		comp.setLocation(0, 0);
 		setLayout(new BorderLayout());
-		
+
 		play.events().addMediaPlayerEventListener((new MediaPlayerEventAdapter() {
 			@Override
 			public void lengthChanged(MediaPlayer mediaPlayer, long newLength) {
 				progresso.modificarFim(status.length());
-				System.out.println((float) temp / 100);
 				controle.setPosition((float) temp / 100);
+				progresso.barra.setCapit(chapter);
 			}
 
 			@Override
@@ -108,7 +118,7 @@ public class Player extends JFrame {
 				super.windowClosing(e);
 			}
 		});
-		
+
 		comp.videoSurfaceComponent().addMouseWheelListener((a) -> {
 			int vol = audio.volume() - (a.getWheelRotation() * (ismult ? mult : 1));
 			if (vol > 200) {
@@ -118,7 +128,7 @@ public class Player extends JFrame {
 			}
 			audio.setVolume(vol);
 		});
-		
+
 		comp.videoSurfaceComponent().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -141,11 +151,15 @@ public class Player extends JFrame {
 		add(comp, BorderLayout.CENTER);
 		add(inferior, BorderLayout.SOUTH);
 	}
+
 	public Player(File arq, Consumer<Long[]> con) {
 		this(arq, con, 0);
 	}
+
 	/**
-	 * Classe que possui os controle de Pause e Volume (este só é controlado pelo mouse)
+	 * Classe que possui os controle de Pause e Volume (este só é controlado pelo
+	 * mouse)
+	 * 
 	 * @author natan
 	 *
 	 */
@@ -164,24 +178,31 @@ public class Player extends JFrame {
 			add(lb, BorderLayout.EAST);
 			add(bt1, BorderLayout.WEST);
 		}
+
 		/**
 		 * Metodo para alterar o texto do volume
+		 * 
 		 * @param novo
 		 */
 		public void alterarVolume(int novo) {
 			lb.setText(strs[1] + novo);
 		}
 	}
+
 	/**
-	 * Classe onde possui as JLabels inicio e fim  (ini e fim) e a barra de progresso
+	 * Classe onde possui as JLabels inicio e fim (ini e fim) e a barra de progresso
+	 * 
 	 * @author natan
 	 *
 	 */
 	private class Progresso extends JPanel {
-
+		final JPopupMenu pop = new JPopupMenu();
+		JMenuItem item = new JMenuItem();
 		private JLabel ini, fim;
 		private LongJSlider barra;
-		
+		private String noms = "";
+		private int quand = -1;
+
 		public LongJSlider getBarra() {
 			return barra;
 		}
@@ -190,22 +211,53 @@ public class Player extends JFrame {
 			ini = new JLabel();
 			fim = new JLabel();
 			barra = new LongJSlider();
-			barra.addChangeListener((a) -> {
-				if (barra.getValueIsAdjusting()) {
-					ini.setText(tempoDinamico(barra.getLongValue()));
-				}
-			});
+			item.setText("");
+			pop.add(item);
+			pop.setDoubleBuffered(true);
+
 			barra.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					//para alterar o tempo no video
+					// para alterar o tempo no video
 					controle.setTime(barra.getLongValue());
 					controle.play();
 				}
 
 				@Override
 				public void mousePressed(MouseEvent e) {
-					controle.pause();
+//					controle.pause();
+				}
+
+				@Override
+				public void mouseExited(MouseEvent e) {
+					pop.setVisible(false);
+				}
+			});
+			barra.addMouseMotionListener(new MouseMotionAdapter() {
+				@Override
+				public void mouseMoved(MouseEvent me) {
+					// limit the tooltip location relative to the slider
+					List<ChapterDescription> dec = chapter.descriptions();
+					Point p = me.getPoint();
+					double percent = p.x / ((double) getWidth());
+					long range = barra.getLongMaximum() - barra.getLongMinimum();
+					double newVal = range * percent;
+					long result = (long) (barra.getLongMinimum() + newVal);
+
+					ChapterDescription ds = null;
+					for (ChapterDescription c : dec) {
+						if (result >= c.offset() && result <= c.duration() + c.offset()) {
+							ds = c;
+							break;
+						}
+					}
+					if (ds == null) return;
+					if (!ds.name().equals(item.getText())|| !pop.isVisible()) {
+						item.setText(ds.name());
+						pop.setLocation(me.getXOnScreen(), me.getYOnScreen() - 30);
+						pop.setVisible(true);
+						item.setArmed(false);
+					}
 				}
 			});
 			setLayout(new BorderLayout());
@@ -213,47 +265,99 @@ public class Player extends JFrame {
 			add(barra, BorderLayout.CENTER);
 			add(fim, BorderLayout.EAST);
 		}
+
 		/**
 		 * Metodo para alterar o texto do fim do video
+		 * 
 		 * @param ms
 		 */
 		public void modificarFim(long ms) {
 			barra.setLongMaximum(ms);
-			this.fim.setText(tempoDinamico(ms));
+			this.fim.setText(tempoDinamico(ms,-1));
+			quand = tempodinamico(ms);
 		}
+
 		/**
 		 * Metodo para alterar o texto do inicio do video
+		 * 
 		 * @param ms
 		 */
 		public void modificarInicio(long ms) {
-			this.ini.setText(tempoDinamico(ms));
+			this.ini.setText(tempoDinamico(ms,quand));
 		}
+
 		/**
 		 * Metodo para alterar o progresso do video
+		 * 
 		 * @param val
 		 */
 		public void modificarBarra(long val) {
+			ChapterDescription ds = null;
+			for (ChapterDescription c : chapter.descriptions()) {
+				if (val >= c.offset() && val <= c.duration() + c.offset()) {
+					ds = c;
+					break;
+				}
+			}
+			if (!ds.name().equals(noms)) {
+				noms = ds.name();
+				System.out.println(noms);
+			}
 			barra.setLongValue(val);
+
 		}
+
 		/**
 		 * Metodo que converte os milisegundos para hora:minuto:segundo
+		 * 
 		 * @param ms
 		 * @return
 		 */
-		private String tempoDinamico(long ms) {
+		private String tempoDinamico(long ms, int quand) {
 			int secs, mins, horas;
 			horas = (int) (ms / 3600000);
 			mins = (int) (ms / 60000);
 			secs = (int) ((ms / 1000) % 60);
 			String time;
-			if (horas > 0) {
-				time = String.format("%02d:%02d:%02d", horas, mins, secs);
-			} else if (mins > 0) {
-				time = String.format("%02d:%02d", mins, secs);
-			} else {
+			switch (quand) {
+			case 0:
 				time = String.format("%02d", secs);
+				break;
+			case 1:
+				time = String.format("%02d:%02d", mins, secs);
+				break;
+			case 2:
+				time = String.format("%02d:%02d:%02d", horas, mins, secs);
+				break;
+			default:
+				if (horas > 0) {
+					time = String.format("%02d:%02d:%02d", horas, mins, secs);
+				} else if (mins > 0) {
+					time = String.format("%02d:%02d", mins, secs);
+				} else {
+					time = String.format("%02d", secs);
+				}
+				break;
 			}
+
 			return time;
+		}
+
+		private int tempodinamico(long ms) {
+			int secs, mins, horas;
+			horas = (int) (ms / 3600000);
+			mins = (int) (ms / 60000);
+			secs = (int) ((ms / 1000) % 60);
+			int count;
+			if (horas > 0) {
+				count = 2;
+			} else if (mins > 0) {
+				count  = 1;
+			} else {
+				count = 0;
+			}
+
+			return count;
 		}
 	}
 }
