@@ -23,6 +23,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javaplay.JavaPlay;
+import javaplay.outros.InserirResultado;
+import javaplay.outros.ObterResultado;
+import javaplay.outros.Resultado;
 /**
  * Classe para se comunicar com o banco de dados.
  * @author natan

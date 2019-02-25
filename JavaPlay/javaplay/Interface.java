@@ -38,11 +38,11 @@ import javax.swing.JScrollPane;
 
 import org.apache.commons.io.FileUtils;
 
+import javaplay.outros.ObterResultado;
 import javaplay.outros.Propriedades;
+import javaplay.outros.Resultado;
 import javaplay.player.Player;
 import javaplay.thread.BancoComunicador;
-import javaplay.thread.ObterResultado;
-import javaplay.thread.Resultado;
 import uk.co.caprica.vlcj.filefilters.VideoFileFilter;
 
 /**

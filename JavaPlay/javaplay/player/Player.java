@@ -35,9 +35,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import javaplay.LongJSlider;
+import javaplay.outros.InserirResultado;
 import javaplay.outros.Propriedades;
 import javaplay.thread.BancoComunicador;
-import javaplay.thread.InserirResultado;
 import uk.co.caprica.vlcj.player.base.AudioApi;
 import uk.co.caprica.vlcj.player.base.ChapterApi;
 import uk.co.caprica.vlcj.player.base.ChapterDescription;
