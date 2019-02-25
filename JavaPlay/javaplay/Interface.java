@@ -14,34 +14,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package iptv.player;
+package javaplay;
 
+import java.awt.Dialog.ModalityType;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
 import org.apache.commons.io.FileUtils;
 
-import iptv.player.thread.BancoComunicador;
-import iptv.player.thread.ObterResultado;
-import iptv.player.thread.Resultado;
+import javaplay.outros.Propriedades;
+import javaplay.player.Player;
+import javaplay.thread.BancoComunicador;
+import javaplay.thread.ObterResultado;
+import javaplay.thread.Resultado;
 import uk.co.caprica.vlcj.filefilters.VideoFileFilter;
 
 /**
@@ -49,6 +50,7 @@ import uk.co.caprica.vlcj.filefilters.VideoFileFilter;
  * @author natan
  */
 public class Interface extends javax.swing.JFrame {
+	private Player play;
 	/**
 	 * Metodo que retorna uma lista de JProgressBar
 	 * @return
@@ -72,12 +74,16 @@ public class Interface extends javax.swing.JFrame {
 			barr.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
+					if (play != null && play.isVisible()) {
+						return;
+					}
 					Resultado res = BancoComunicador.instancia.obterResultado(new ObterResultado(info));
-					Consumer<Long[]> ina = (a)->{
-						int porc = (int) ((100*a[0])/a[1]);
-						barr.setValue(porc);
+					Consumer<Integer> ina = (a)->{
+						barr.setValue(a);
 					};
-					Player play = barr.getValue()>0?new Player(info,ina,res.getUltimoTempo()):new Player(info,ina);
+					play = barr.getValue()>0?new Player(info,ina,res.getUltimoTempo()):new Player(info,ina);
+					play.setModal(true);
+					play.setModalityType(ModalityType.DOCUMENT_MODAL);
 					play.setVisible(true);
 				}
 

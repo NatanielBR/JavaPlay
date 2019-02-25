@@ -19,7 +19,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package iptv.player;
+package javaplay.outros;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,6 +60,13 @@ public class Propriedades {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+    
+    public boolean isPularAbertura() {
+    	return Boolean.parseBoolean(carregar().getProperty("pularAbertura", "false"));
+    }
+    public boolean isProximoArquivo() {
+    	return Boolean.parseBoolean(carregar().getProperty("proximoArquivo", "false"));
     }
     
     private Properties carregar() {

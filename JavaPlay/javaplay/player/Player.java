@@ -14,9 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package iptv.player;
+package javaplay.player;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -27,14 +29,21 @@ import java.io.File;
 import java.util.function.Consumer;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import iptv.player.thread.BancoComunicador;
-import iptv.player.thread.InserirResultado;
+import javaplay.LongJSlider;
+import javaplay.outros.Propriedades;
+import javaplay.thread.BancoComunicador;
+import javaplay.thread.InserirResultado;
 import uk.co.caprica.vlcj.player.base.AudioApi;
+import uk.co.caprica.vlcj.player.base.ChapterApi;
+import uk.co.caprica.vlcj.player.base.ChapterDescription;
 import uk.co.caprica.vlcj.player.base.ControlsApi;
+import uk.co.caprica.vlcj.player.base.MarqueeApi;
+import uk.co.caprica.vlcj.player.base.MarqueePosition;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.base.StatusApi;
@@ -44,50 +53,102 @@ import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 
 /**
  * Player do vlc
+ * 
  * @author Nataniel
  */
-public class Player extends JFrame {
+public class Player extends JDialog {
 	// double porc = ((play.getTime() * 100) / play.getLength());
 
 	private EmbeddedMediaPlayer play;
 	private ControlsApi controle;
 	private StatusApi status;
 	private AudioApi audio;
+	private ChapterApi chapter;
+	private MarqueeApi marca;
+	private MascaraPlayer mascara;
+	private JDialog janela;
+
 	private int mult = 10;
 	private boolean ismult = false;
+	private boolean audioMudança = false;
+	private final boolean isPularAbertura;
+	private final boolean isProximoArquivo;
 
-	public Player(File arq, Consumer<Long[]> con, int temp) {
+	public Player(File arq, Consumer<Integer> con) {
+		this(arq, con, 0, MascaraPlayer.descobrirMascara(arq));
+	}
+
+	public Player(File arq, Consumer<Integer> con, int tim) {
+		this(arq, con, tim == 100 ? 0 : tim, MascaraPlayer.descobrirMascara(arq));
+	}
+
+	public Player(File arq, Consumer<Integer> con, int temp, MascaraPlayer masc) {
 		EmbeddedMediaPlayerComponent comp = new EmbeddedMediaListPlayerComponent();
 		JPanel inferior = new JPanel(new BorderLayout());
 		Progresso progresso = new Progresso();
 		Controles contro = new Controles();
+
+		if (masc != null) {
+			isPularAbertura = Propriedades.instancia.isPularAbertura();
+			isProximoArquivo = Propriedades.instancia.isProximoArquivo();
+		} else {
+			isPularAbertura = false;
+			isProximoArquivo = false;
+		}
+		janela = this;
 		play = comp.mediaPlayer();
 		status = play.status();
 		controle = play.controls();
 		audio = play.audio();
+		chapter = play.chapters();
+		marca = play.marquee();
+		mascara = masc;
+
+
+		marca.setSize(40);
+		marca.setColour(Color.WHITE);
+		marca.setPosition(MarqueePosition.TOP_RIGHT);
+		marca.setOpacity(0.8f);
+		marca.enable(true);
 
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setSize(500, 470);
-		comp.setLocation(0, 0);
 		setLayout(new BorderLayout());
-		
+
 		play.events().addMediaPlayerEventListener((new MediaPlayerEventAdapter() {
 			@Override
 			public void lengthChanged(MediaPlayer mediaPlayer, long newLength) {
 				progresso.modificarFim(status.length());
-				System.out.println((float) temp / 100);
 				controle.setPosition((float) temp / 100);
+				progresso.barra.setCapit(chapter);
+				Dimension video = play.video().videoDimension();
+				janela.setSize(video.width,video.height+(inferior.getHeight()+inferior.getHeight()/2));
 			}
 
 			@Override
 			public void volumeChanged(MediaPlayer mediaPlayer, float volume) {
-				contro.alterarVolume(audio.volume());
+//				contro.alterarVolume(audio.volume());
+				if (!audioMudança)
+					return;
+				alterarAudio(audio.volume());
+				audioMudança = false;
 			}
-
+			@Override
+			public void pausableChanged(MediaPlayer mediaPlayer, int newPausable) {
+				System.out.println(newPausable);
+			}
 			@Override
 			public void positionChanged(MediaPlayer mediaPlayer, float newPosition) {
 				progresso.modificarInicio(status.time());
 				progresso.modificarBarra(status.time());
+			}
+
+			@Override
+			public void finished(MediaPlayer mediaPlayer) {
+				int porc = 100;
+				new Thread(() -> BancoComunicador.instancia.inserirResultado(new InserirResultado(porc, arq))).start();
+				con.accept(porc);
+				janela.dispose();
 			}
 		}));
 		addWindowListener(new WindowAdapter() {
@@ -99,16 +160,17 @@ public class Player extends JFrame {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
-				comp.release();
+				controle.setPause(true);
 				long max = progresso.getBarra().getLongMaximum();
 				long atu = progresso.getBarra().getLongValue();
 				int porc = (int) ((100 * atu) / max);
 				new Thread(() -> BancoComunicador.instancia.inserirResultado(new InserirResultado(porc, arq))).start();
-				con.accept(new Long[] { atu, max });
+				con.accept(porc);
+				comp.release();
 				super.windowClosing(e);
 			}
 		});
-		
+
 		comp.videoSurfaceComponent().addMouseWheelListener((a) -> {
 			int vol = audio.volume() - (a.getWheelRotation() * (ismult ? mult : 1));
 			if (vol > 200) {
@@ -116,9 +178,10 @@ public class Player extends JFrame {
 			} else if (vol < 0) {
 				vol = 0;
 			}
+			audioMudança = true;
 			audio.setVolume(vol);
 		});
-		
+
 		comp.videoSurfaceComponent().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -141,47 +204,49 @@ public class Player extends JFrame {
 		add(comp, BorderLayout.CENTER);
 		add(inferior, BorderLayout.SOUTH);
 	}
-	public Player(File arq, Consumer<Long[]> con) {
-		this(arq, con, 0);
+
+	public void alterarMensagem(String men) {
+		marca.setText(men);
+		marca.setTimeout(3000);
+		marca.setColour(Color.white);
 	}
+
+	public void alterarAudio(int val) {
+		marca.setText(Strings.getString("0") + val);
+		marca.setColour(Color.yellow);
+		marca.setTimeout(500);
+	}
+
 	/**
-	 * Classe que possui os controle de Pause e Volume (este só é controlado pelo mouse)
+	 * Classe que possui os controle de Pause e Volume (este só é controlado pelo
+	 * mouse)
+	 * 
 	 * @author natan
 	 *
 	 */
 	private class Controles extends JPanel {
-
-		private String[] strs = new String[] { "Pausar", "Volume: " };
-		private JLabel lb;
-
 		public Controles() {
 			setLayout(new BorderLayout());
-			JButton bt1 = new JButton(strs[0]);
+			JButton bt1 = new JButton(Strings.getString("1"));
 			bt1.addActionListener((a) -> {
 				controle.pause();
 			});
-			lb = new JLabel();
-			add(lb, BorderLayout.EAST);
 			add(bt1, BorderLayout.WEST);
 		}
-		/**
-		 * Metodo para alterar o texto do volume
-		 * @param novo
-		 */
-		public void alterarVolume(int novo) {
-			lb.setText(strs[1] + novo);
-		}
 	}
+
 	/**
-	 * Classe onde possui as JLabels inicio e fim  (ini e fim) e a barra de progresso
+	 * Classe onde possui as JLabels inicio e fim (ini e fim) e a barra de progresso
+	 * 
 	 * @author natan
 	 *
 	 */
 	private class Progresso extends JPanel {
-
 		private JLabel ini, fim;
 		private LongJSlider barra;
-		
+		private String noms = null;
+		private int quand = -1;
+
 		public LongJSlider getBarra() {
 			return barra;
 		}
@@ -190,15 +255,10 @@ public class Player extends JFrame {
 			ini = new JLabel();
 			fim = new JLabel();
 			barra = new LongJSlider();
-			barra.addChangeListener((a) -> {
-				if (barra.getValueIsAdjusting()) {
-					ini.setText(tempoDinamico(barra.getLongValue()));
-				}
-			});
+
 			barra.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					//para alterar o tempo no video
 					controle.setTime(barra.getLongValue());
 					controle.play();
 				}
@@ -213,47 +273,115 @@ public class Player extends JFrame {
 			add(barra, BorderLayout.CENTER);
 			add(fim, BorderLayout.EAST);
 		}
+
 		/**
 		 * Metodo para alterar o texto do fim do video
+		 * 
 		 * @param ms
 		 */
 		public void modificarFim(long ms) {
 			barra.setLongMaximum(ms);
-			this.fim.setText(tempoDinamico(ms));
+			this.fim.setText(tempoDinamico(ms, -1));
+			quand = tempodinamico(ms);
 		}
+
 		/**
 		 * Metodo para alterar o texto do inicio do video
+		 * 
 		 * @param ms
 		 */
 		public void modificarInicio(long ms) {
-			this.ini.setText(tempoDinamico(ms));
+			this.ini.setText(tempoDinamico(ms, quand));
 		}
+
 		/**
 		 * Metodo para alterar o progresso do video
+		 * 
 		 * @param val
 		 */
 		public void modificarBarra(long val) {
+			ChapterDescription ds = null;
+			for (ChapterDescription c : chapter.descriptions()) {
+				if (val >= c.offset() && val <= c.duration() + c.offset()) {
+					ds = c;
+					break;
+				}
+			}
+			if (!ds.name().equals(noms)) {
+				noms = ds.name();
+
+				if (isPularAbertura) {
+					int id = mascara.getAberturaPulavel();
+					String pular = mascara.getDicionario()[id];
+					if (noms.replace(" ", "").equals(pular)) {
+						chapter.setChapter(id + 1);
+					}
+				}
+				if (isProximoArquivo) {
+					int id = mascara.getEncerramentoPulavel();
+					String pular = mascara.getDicionario()[id];
+					if (noms.replace(" ", "").equals(pular)) {
+						System.out.println(noms + "-" + pular);
+						chapter.setChapter(id + 1);
+					}
+				}
+				alterarMensagem(noms);
+			}
 			barra.setLongValue(val);
+
 		}
+
 		/**
 		 * Metodo que converte os milisegundos para hora:minuto:segundo
+		 * 
 		 * @param ms
 		 * @return
 		 */
-		private String tempoDinamico(long ms) {
+		private String tempoDinamico(long ms, int quand) {
 			int secs, mins, horas;
 			horas = (int) (ms / 3600000);
 			mins = (int) (ms / 60000);
 			secs = (int) ((ms / 1000) % 60);
 			String time;
-			if (horas > 0) {
-				time = String.format("%02d:%02d:%02d", horas, mins, secs);
-			} else if (mins > 0) {
-				time = String.format("%02d:%02d", mins, secs);
-			} else {
-				time = String.format("%02d", secs);
+			switch (quand) {
+			case 0:
+				time = String.format(Strings.getString("6"), secs);
+				break;
+			case 1:
+				time = String.format(Strings.getString("7"), mins, secs); 
+				break;
+			case 2:
+				time = String.format(Strings.getString("8"), horas, mins, secs);
+				break;
+			default:
+				if (horas > 0) {
+					time = String.format(Strings.getString("9"), horas, mins, secs);
+				} else if (mins > 0) {
+					time = String.format(Strings.getString("10"), mins, secs);
+				} else {
+					time = String.format(Strings.getString("11"), secs);
+				}
+				break;
 			}
+
 			return time;
+		}
+
+		private int tempodinamico(long ms) {
+			int secs, mins, horas;
+			horas = (int) (ms / 3600000);
+			mins = (int) (ms / 60000);
+			secs = (int) ((ms / 1000) % 60);
+			int count;
+			if (horas > 0) {
+				count = 2;
+			} else if (mins > 0) {
+				count = 1;
+			} else {
+				count = 0;
+			}
+
+			return count;
 		}
 	}
 }
