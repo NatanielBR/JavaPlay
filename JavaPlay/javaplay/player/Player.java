@@ -18,7 +18,7 @@ package javaplay.player;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GridLayout;
+import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -29,12 +29,10 @@ import java.io.File;
 import java.util.function.Consumer;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
 
 import javaplay.LongJSlider;
 import javaplay.outros.Propriedades;
@@ -58,7 +56,7 @@ import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
  * 
  * @author Nataniel
  */
-public class Player extends JFrame {
+public class Player extends JDialog {
 	// double porc = ((play.getTime() * 100) / play.getLength());
 
 	private EmbeddedMediaPlayer play;
@@ -68,29 +66,35 @@ public class Player extends JFrame {
 	private ChapterApi chapter;
 	private MarqueeApi marca;
 	private MascaraPlayer mascara;
-	private JFrame janela;
-	
+	private JDialog janela;
+
 	private int mult = 10;
 	private boolean ismult = false;
 	private boolean audioMudança = false;
 	private final boolean isPularAbertura;
 	private final boolean isProximoArquivo;
-	
+
 	public Player(File arq, Consumer<Integer> con) {
 		this(arq, con, 0, MascaraPlayer.descobrirMascara(arq));
 	}
+
 	public Player(File arq, Consumer<Integer> con, int tim) {
-		this(arq,con,tim==100?0:tim,MascaraPlayer.descobrirMascara(arq));
+		this(arq, con, tim == 100 ? 0 : tim, MascaraPlayer.descobrirMascara(arq));
 	}
-	public Player(File arq, Consumer<Integer> con, int temp , MascaraPlayer masc) {
+
+	public Player(File arq, Consumer<Integer> con, int temp, MascaraPlayer masc) {
 		EmbeddedMediaPlayerComponent comp = new EmbeddedMediaListPlayerComponent();
 		JPanel inferior = new JPanel(new BorderLayout());
 		Progresso progresso = new Progresso();
 		Controles contro = new Controles();
-		
-		isPularAbertura = Propriedades.instancia.isPularAbertura();
-		isProximoArquivo = Propriedades.instancia.isProximoArquivo();
-		
+
+		if (masc != null) {
+			isPularAbertura = Propriedades.instancia.isPularAbertura();
+			isProximoArquivo = Propriedades.instancia.isProximoArquivo();
+		} else {
+			isPularAbertura = false;
+			isProximoArquivo = false;
+		}
 		janela = this;
 		play = comp.mediaPlayer();
 		status = play.status();
@@ -99,13 +103,14 @@ public class Player extends JFrame {
 		chapter = play.chapters();
 		marca = play.marquee();
 		mascara = masc;
-		
+
+
 		marca.setSize(40);
 		marca.setColour(Color.WHITE);
 		marca.setPosition(MarqueePosition.TOP_RIGHT);
 		marca.setOpacity(0.8f);
 		marca.enable(true);
-		
+
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setSize(500, 470);
 		setLayout(new BorderLayout());
@@ -116,6 +121,8 @@ public class Player extends JFrame {
 				progresso.modificarFim(status.length());
 				controle.setPosition((float) temp / 100);
 				progresso.barra.setCapit(chapter);
+				Dimension video = play.video().videoDimension();
+				janela.setSize(video.width,video.height+(inferior.getHeight()+inferior.getHeight()/2));
 			}
 
 			@Override
@@ -126,15 +133,18 @@ public class Player extends JFrame {
 				alterarAudio(audio.volume());
 				audioMudança = false;
 			}
-
+			@Override
+			public void pausableChanged(MediaPlayer mediaPlayer, int newPausable) {
+				System.out.println(newPausable);
+			}
 			@Override
 			public void positionChanged(MediaPlayer mediaPlayer, float newPosition) {
 				progresso.modificarInicio(status.time());
 				progresso.modificarBarra(status.time());
 			}
+
 			@Override
 			public void finished(MediaPlayer mediaPlayer) {
-				System.out.println("dasd");
 				int porc = 100;
 				new Thread(() -> BancoComunicador.instancia.inserirResultado(new InserirResultado(porc, arq))).start();
 				con.accept(porc);
@@ -150,8 +160,7 @@ public class Player extends JFrame {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
-				controle.pause();
-				System.out.println("asdas");
+				controle.setPause(true);
 				long max = progresso.getBarra().getLongMaximum();
 				long atu = progresso.getBarra().getLongValue();
 				int porc = (int) ((100 * atu) / max);
@@ -189,13 +198,13 @@ public class Player extends JFrame {
 				ismult = e.isControlDown();
 			}
 		});
-
 		inferior.add(contro, BorderLayout.SOUTH);
 		inferior.add(progresso, BorderLayout.NORTH);
 
 		add(comp, BorderLayout.CENTER);
 		add(inferior, BorderLayout.SOUTH);
 	}
+
 	public void alterarMensagem(String men) {
 		marca.setText(men);
 		marca.setTimeout(3000);
@@ -203,7 +212,7 @@ public class Player extends JFrame {
 	}
 
 	public void alterarAudio(int val) {
-		marca.setText(Strings.getString("0")+val); //$NON-NLS-1$
+		marca.setText(Strings.getString("0") + val);
 		marca.setColour(Color.yellow);
 		marca.setTimeout(500);
 	}
@@ -216,11 +225,9 @@ public class Player extends JFrame {
 	 *
 	 */
 	private class Controles extends JPanel {
-		public JToggleButton abertura,proximo;
 		public Controles() {
 			setLayout(new BorderLayout());
 			JButton bt1 = new JButton(Strings.getString("1"));
-			//Strings.getString("3")
 			bt1.addActionListener((a) -> {
 				controle.pause();
 			});
@@ -235,11 +242,9 @@ public class Player extends JFrame {
 	 *
 	 */
 	private class Progresso extends JPanel {
-		final JPopupMenu pop = new JPopupMenu();
-		JMenuItem item = new JMenuItem();
 		private JLabel ini, fim;
 		private LongJSlider barra;
-		private String noms = ""; //$NON-NLS-1$
+		private String noms = null;
 		private int quand = -1;
 
 		public LongJSlider getBarra() {
@@ -250,14 +255,10 @@ public class Player extends JFrame {
 			ini = new JLabel();
 			fim = new JLabel();
 			barra = new LongJSlider();
-			item.setText(""); //$NON-NLS-1$
-			pop.add(item);
-			pop.setDoubleBuffered(true);
 
 			barra.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					// para alterar o tempo no video
 					controle.setTime(barra.getLongValue());
 					controle.play();
 				}
@@ -265,11 +266,6 @@ public class Player extends JFrame {
 				@Override
 				public void mousePressed(MouseEvent e) {
 					controle.pause();
-				}
-
-				@Override
-				public void mouseExited(MouseEvent e) {
-					pop.setVisible(false);
 				}
 			});
 			setLayout(new BorderLayout());
@@ -313,21 +309,20 @@ public class Player extends JFrame {
 			}
 			if (!ds.name().equals(noms)) {
 				noms = ds.name();
-				
+
 				if (isPularAbertura) {
 					int id = mascara.getAberturaPulavel();
 					String pular = mascara.getDicionario()[id];
 					if (noms.replace(" ", "").equals(pular)) {
-						chapter.setChapter(id+1);
+						chapter.setChapter(id + 1);
 					}
 				}
 				if (isProximoArquivo) {
 					int id = mascara.getEncerramentoPulavel();
 					String pular = mascara.getDicionario()[id];
-					System.out.println(noms + "-" + pular);
 					if (noms.replace(" ", "").equals(pular)) {
 						System.out.println(noms + "-" + pular);
-						chapter.setChapter(id+1);
+						chapter.setChapter(id + 1);
 					}
 				}
 				alterarMensagem(noms);
@@ -350,21 +345,21 @@ public class Player extends JFrame {
 			String time;
 			switch (quand) {
 			case 0:
-				time = String.format(Strings.getString("6"), secs); //$NON-NLS-1$
+				time = String.format(Strings.getString("6"), secs);
 				break;
 			case 1:
-				time = String.format(Strings.getString("7"), mins, secs); //$NON-NLS-1$
+				time = String.format(Strings.getString("7"), mins, secs); 
 				break;
 			case 2:
-				time = String.format(Strings.getString("8"), horas, mins, secs); //$NON-NLS-1$
+				time = String.format(Strings.getString("8"), horas, mins, secs);
 				break;
 			default:
 				if (horas > 0) {
-					time = String.format(Strings.getString("9"), horas, mins, secs); //$NON-NLS-1$
+					time = String.format(Strings.getString("9"), horas, mins, secs);
 				} else if (mins > 0) {
-					time = String.format(Strings.getString("10"), mins, secs); //$NON-NLS-1$
+					time = String.format(Strings.getString("10"), mins, secs);
 				} else {
-					time = String.format(Strings.getString("11"), secs); //$NON-NLS-1$
+					time = String.format(Strings.getString("11"), secs);
 				}
 				break;
 			}
