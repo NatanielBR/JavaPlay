@@ -29,19 +29,21 @@ import java.io.File;
 import java.util.function.Consumer;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import javaplay.LongJSlider;
+import javaplay.central.JBarra;
+import javaplay.central.JLista;
+import javaplay.central.LongJSlider;
+import javaplay.outros.BancoComunicador;
 import javaplay.outros.Propriedades;
-import javaplay.thread.BancoComunicador;
-import javaplay.thread.InserirResultado;
+import javaplay.player.mascara.MascaraPlayer;
 import uk.co.caprica.vlcj.player.base.AudioApi;
 import uk.co.caprica.vlcj.player.base.ChapterApi;
 import uk.co.caprica.vlcj.player.base.ChapterDescription;
 import uk.co.caprica.vlcj.player.base.ControlsApi;
+import uk.co.caprica.vlcj.player.base.LogoApi;
 import uk.co.caprica.vlcj.player.base.MarqueeApi;
 import uk.co.caprica.vlcj.player.base.MarqueePosition;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
@@ -50,13 +52,14 @@ import uk.co.caprica.vlcj.player.base.StatusApi;
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaListPlayerComponent;
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
+import uk.co.caprica.vlcj.player.embedded.fullscreen.adaptive.AdaptiveFullScreenStrategy;
 
 /**
  * Player do vlc
  * 
  * @author Nataniel
  */
-public class Player extends JDialog {
+public class Player extends JFrame {
 	// double porc = ((play.getTime() * 100) / play.getLength());
 
 	private EmbeddedMediaPlayer play;
@@ -66,44 +69,36 @@ public class Player extends JDialog {
 	private ChapterApi chapter;
 	private MarqueeApi marca;
 	private MascaraPlayer mascara;
-	private JDialog janela;
-
+	private JFrame janela;
+	private JLista lista;
 	private int mult = 10;
 	private boolean ismult = false;
 	private boolean audioMudança = false;
-	private final boolean isPularAbertura;
-	private final boolean isProximoArquivo;
+	private boolean isPularAbertura;
+	private boolean isProximoArquivo;
 
-	public Player(File arq, Consumer<Integer> con) {
-		this(arq, con, 0, MascaraPlayer.descobrirMascara(arq));
+	public Player(File arq, Consumer<Integer> con, int tim, JLista lista) {
+		this(arq, con, tim == 100 ? 0 : tim, MascaraPlayer.descobrirMascara(arq), lista);
 	}
 
-	public Player(File arq, Consumer<Integer> con, int tim) {
-		this(arq, con, tim == 100 ? 0 : tim, MascaraPlayer.descobrirMascara(arq));
-	}
-
-	public Player(File arq, Consumer<Integer> con, int temp, MascaraPlayer masc) {
+	public Player(File arq, Consumer<Integer> con, int temp, MascaraPlayer masc, JLista lista) {
+		setTitle("Player");
 		EmbeddedMediaPlayerComponent comp = new EmbeddedMediaListPlayerComponent();
 		JPanel inferior = new JPanel(new BorderLayout());
 		Progresso progresso = new Progresso();
-		Controles contro = new Controles();
+		setarPropriedades(masc);
 
-		if (masc != null) {
-			isPularAbertura = Propriedades.instancia.isPularAbertura();
-			isProximoArquivo = Propriedades.instancia.isProximoArquivo();
-		} else {
-			isPularAbertura = false;
-			isProximoArquivo = false;
-		}
 		janela = this;
+		this.lista = lista;
 		play = comp.mediaPlayer();
 		status = play.status();
 		controle = play.controls();
 		audio = play.audio();
 		chapter = play.chapters();
 		marca = play.marquee();
-		mascara = masc;
+		play.logo();
 
+		mascara = masc;
 
 		marca.setSize(40);
 		marca.setColour(Color.WHITE);
@@ -111,6 +106,7 @@ public class Player extends JDialog {
 		marca.setOpacity(0.8f);
 		marca.enable(true);
 
+		play.fullScreen().strategy(new AdaptiveFullScreenStrategy(janela));
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setSize(500, 470);
 		setLayout(new BorderLayout());
@@ -122,21 +118,27 @@ public class Player extends JDialog {
 				controle.setPosition((float) temp / 100);
 				progresso.barra.setCapit(chapter);
 				Dimension video = play.video().videoDimension();
-				janela.setSize(video.width,video.height+(inferior.getHeight()+inferior.getHeight()/2));
+				janela.setSize(video.width, video.height + (inferior.getHeight() + inferior.getHeight() / 2));
 			}
 
 			@Override
 			public void volumeChanged(MediaPlayer mediaPlayer, float volume) {
-//				contro.alterarVolume(audio.volume());
 				if (!audioMudança)
 					return;
 				alterarAudio(audio.volume());
 				audioMudança = false;
 			}
+
 			@Override
-			public void pausableChanged(MediaPlayer mediaPlayer, int newPausable) {
-				System.out.println(newPausable);
+			public void paused(MediaPlayer mediaPlayer) {
+				alterarMensagem("Pausado");
 			}
+
+			@Override
+			public void playing(MediaPlayer mediaPlayer) {
+				alterarMensagem("Rodando");
+			}
+
 			@Override
 			public void positionChanged(MediaPlayer mediaPlayer, float newPosition) {
 				progresso.modificarInicio(status.time());
@@ -145,28 +147,30 @@ public class Player extends JDialog {
 
 			@Override
 			public void finished(MediaPlayer mediaPlayer) {
-				int porc = 100;
-				new Thread(() -> BancoComunicador.instancia.inserirResultado(new InserirResultado(porc, arq))).start();
-				con.accept(porc);
-				janela.dispose();
+				janela.dispatchEvent(new WindowEvent(janela, WindowEvent.WINDOW_CLOSING));
 			}
 		}));
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowOpened(WindowEvent we) {
 				super.windowOpened(we);
-				play.media().play(arq.getAbsolutePath());
+				play.media().prepare(arq.getAbsolutePath());
+				lista.getPai().setVisible(false);
+				controle.play();
 			}
 
 			@Override
 			public void windowClosing(WindowEvent e) {
-				controle.setPause(true);
+				if (status.isPlaying()) {
+					controle.setPause(true);
+				}
 				long max = progresso.getBarra().getLongMaximum();
 				long atu = progresso.getBarra().getLongValue();
 				int porc = (int) ((100 * atu) / max);
-				new Thread(() -> BancoComunicador.instancia.inserirResultado(new InserirResultado(porc, arq))).start();
+				new Thread(() -> BancoComunicador.instancia.inserirResultado(porc, arq)).start();
 				con.accept(porc);
-				comp.release();
+				lista.getPai().setVisible(true);
+				janela.dispose();
 				super.windowClosing(e);
 			}
 		});
@@ -190,6 +194,8 @@ public class Player extends JDialog {
 				case KeyEvent.VK_SPACE:
 					controle.pause();
 					break;
+				case KeyEvent.VK_F:
+					play.fullScreen().set(!play.fullScreen().isFullScreen());
 				}
 			}
 
@@ -198,11 +204,20 @@ public class Player extends JDialog {
 				ismult = e.isControlDown();
 			}
 		});
-		inferior.add(contro, BorderLayout.SOUTH);
 		inferior.add(progresso, BorderLayout.NORTH);
 
 		add(comp, BorderLayout.CENTER);
 		add(inferior, BorderLayout.SOUTH);
+	}
+
+	private void setarPropriedades(MascaraPlayer masc) {
+		if (masc != null) {
+			isPularAbertura = Propriedades.instancia.isPularAbertura();
+			isProximoArquivo = Propriedades.instancia.isProximoArquivo();
+		} else {
+			isPularAbertura = false;
+			isProximoArquivo = false;
+		}
 	}
 
 	public void alterarMensagem(String men) {
@@ -215,24 +230,6 @@ public class Player extends JDialog {
 		marca.setText(Strings.getString("0") + val);
 		marca.setColour(Color.yellow);
 		marca.setTimeout(500);
-	}
-
-	/**
-	 * Classe que possui os controle de Pause e Volume (este só é controlado pelo
-	 * mouse)
-	 * 
-	 * @author natan
-	 *
-	 */
-	private class Controles extends JPanel {
-		public Controles() {
-			setLayout(new BorderLayout());
-			JButton bt1 = new JButton(Strings.getString("1"));
-			bt1.addActionListener((a) -> {
-				controle.pause();
-			});
-			add(bt1, BorderLayout.WEST);
-		}
 	}
 
 	/**
@@ -300,35 +297,49 @@ public class Player extends JDialog {
 		 * @param val
 		 */
 		public void modificarBarra(long val) {
-			ChapterDescription ds = null;
-			for (ChapterDescription c : chapter.descriptions()) {
-				if (val >= c.offset() && val <= c.duration() + c.offset()) {
-					ds = c;
-					break;
-				}
+			barra.setLongValue(val);
+			if (chapter.count() > 0) {
+				trabalharMascara(val);
 			}
-			if (!ds.name().equals(noms)) {
-				noms = ds.name();
+		}
 
+		private void proximoArquivo() {
+			int ind = lista.getSelectedIndex();
+			if ((ind + 1) < lista.getModel().getSize()) {
+				new Thread(() -> {
+
+					JBarra barra = lista.getModel().getElementAt(ind + 1);
+					Consumer<Integer> ina = (b) -> {
+						barra.setValue(b);
+					};
+					lista.setSelectedIndex(ind + 1);
+					Player play = new Player(barra.getArquivo(), ina, barra.getValue(), lista);
+					janela.dispatchEvent(new WindowEvent(janela, WindowEvent.WINDOW_CLOSING));
+					lista.repaint();
+					play.setVisible(true);
+				}).start();
+			}
+		}
+
+		private void trabalharMascara(long val) {
+			ChapterDescription desc = chapter.descriptions().stream().filter((a) -> val >= a.offset())
+					.filter((c) -> val <= c.duration() + c.offset()).findFirst().orElse(null);
+			if (desc == null) {
+				return;
+			} else if (!desc.name().equals(noms)) {
+				noms = desc.name();
 				if (isPularAbertura) {
-					int id = mascara.getAberturaPulavel();
-					String pular = mascara.getDicionario()[id];
-					if (noms.replace(" ", "").equals(pular)) {
-						chapter.setChapter(id + 1);
+					if (mascara.confirmarAberturaPulavel(noms)) {
+						chapter.setChapter(chapter.chapter() + 1);
 					}
 				}
 				if (isProximoArquivo) {
-					int id = mascara.getEncerramentoPulavel();
-					String pular = mascara.getDicionario()[id];
-					if (noms.replace(" ", "").equals(pular)) {
-						System.out.println(noms + "-" + pular);
-						chapter.setChapter(id + 1);
+					if (mascara.confirmarEncerramentoPulavel(noms)) {
+						proximoArquivo();
 					}
 				}
 				alterarMensagem(noms);
 			}
-			barra.setLongValue(val);
-
 		}
 
 		/**
@@ -348,7 +359,7 @@ public class Player extends JDialog {
 				time = String.format(Strings.getString("6"), secs);
 				break;
 			case 1:
-				time = String.format(Strings.getString("7"), mins, secs); 
+				time = String.format(Strings.getString("7"), mins, secs);
 				break;
 			case 2:
 				time = String.format(Strings.getString("8"), horas, mins, secs);

@@ -14,20 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package javaplay.thread;
+package javaplay.outros;
 
 import java.io.File;
 /**
- * Classe quase depreceada para obter o resultado
+ * Classe para simbolizar o Resultado
  * @author natan
  *
  */
-public class ObterResultado{
-	private final File arq;
-	public ObterResultado(File arquivo) {
-		arq = arquivo;
+public class Resultado{
+
+	private final  int ultimoTempo;
+	private final File arquivo;
+	public Resultado(int ultimoTempo, File file) {
+		this.ultimoTempo = ultimoTempo;
+		this.arquivo = file;
 	}
-	public File getArq() {
-		return arq;
+	public File getArquivo() {
+		return arquivo;
 	}
+	public int getUltimoTempo() {
+		return ultimoTempo;
+	}
+	
 }

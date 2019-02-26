@@ -1,4 +1,4 @@
-package javaplay.player;
+package javaplay.player.mascara;
 
 import java.io.File;
 
@@ -15,11 +15,11 @@ public interface MascaraPlayer {
 	/**
 	 * @return the abertura pulavel
 	 */
-	public int getAberturaPulavel();
+	public boolean confirmarAberturaPulavel(String um);
 	/**
 	 * @return the aberturapulavel
 	 */
-	public int getEncerramentoPulavel();
+	public boolean confirmarEncerramentoPulavel(String um);
 
 	/**
 	 * @return the proximo
