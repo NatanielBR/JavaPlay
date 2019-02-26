@@ -133,22 +133,21 @@ public class Player extends JFrame {
 			public void paused(MediaPlayer mediaPlayer) {
 				alterarMensagem("Pausado");
 			}
+
 			@Override
 			public void playing(MediaPlayer mediaPlayer) {
 				alterarMensagem("Rodando");
 			}
+
 			@Override
 			public void positionChanged(MediaPlayer mediaPlayer, float newPosition) {
 				progresso.modificarInicio(status.time());
 				progresso.modificarBarra(status.time());
 			}
+
 			@Override
 			public void finished(MediaPlayer mediaPlayer) {
-				int porc = 100;
-				new Thread(() -> BancoComunicador.instancia.inserirResultado(porc, arq)).start();
-				con.accept(porc);
-				lista.getPai().setVisible(true);
-				janela.dispose();
+				janela.dispatchEvent(new WindowEvent(janela, WindowEvent.WINDOW_CLOSING));
 			}
 		}));
 		addWindowListener(new WindowAdapter() {
@@ -162,14 +161,16 @@ public class Player extends JFrame {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
-				controle.setPause(true);
+				if (status.isPlaying()) {
+					controle.setPause(true);
+				}
 				long max = progresso.getBarra().getLongMaximum();
 				long atu = progresso.getBarra().getLongValue();
 				int porc = (int) ((100 * atu) / max);
 				new Thread(() -> BancoComunicador.instancia.inserirResultado(porc, arq)).start();
 				con.accept(porc);
 				lista.getPai().setVisible(true);
-				comp.release();
+				janela.dispose();
 				super.windowClosing(e);
 			}
 		});

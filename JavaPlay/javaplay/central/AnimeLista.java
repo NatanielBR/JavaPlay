@@ -74,7 +74,7 @@ public class AnimeLista {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				encerrar.set(true);
-				super.windowClosing(e);
+				System.exit(0);
 			}
 		});
 		novidade = (a)->{
@@ -115,7 +115,7 @@ public class AnimeLista {
 		Sair.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frame.dispose();
-				encerrar.set(true);
+				System.exit(0);
 			}
 		});
 		mnJavaplay.add(Sair);
