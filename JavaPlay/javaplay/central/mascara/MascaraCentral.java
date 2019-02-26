@@ -14,7 +14,8 @@ public interface MascaraCentral {
 		
 		if (nome.startsWith("[EA]")) {
 			return new MascaraCentralEternalAnimes(arq);
+		}else {
+			return new MascaraCentralDesconhecido(arq);
 		}
-		return null;
 	}
 }

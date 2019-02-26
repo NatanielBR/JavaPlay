@@ -39,7 +39,6 @@ public class AnimeLista {
 		new BancoComunicador();
 		AnimeLista window = new AnimeLista();
 		window.frame.setVisible(true);
-		window.frame.pack();
 		
 	}
 	
@@ -58,11 +57,10 @@ public class AnimeLista {
 			}
 		}
 		listas.keySet().forEach((mascara)->{
-			JLista lis = new JLista();
+			JLista lis = new JLista(frame);
 			lis.adicionarConteudo(listas.get(mascara));
 			Coluna.addTab(mascara, lis);
 		});
-		Coluna.repaint();
 		
 	}
 	
@@ -91,7 +89,7 @@ public class AnimeLista {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
+		frame = new JFrame("JavaPlay");
 		frame.setBounds(100, 100, 760, 510);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 

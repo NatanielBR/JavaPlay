@@ -1,4 +1,4 @@
-package javaplay.player;
+package javaplay.player.mascara;
 
 public class MascaraPlayerEternalAnimes implements MascaraPlayer{
 	private String[] dicionario;
@@ -33,13 +33,15 @@ public class MascaraPlayerEternalAnimes implements MascaraPlayer{
 	}
 
 	@Override
-	public int getAberturaPulavel() {
-		return 1;
+	public boolean confirmarAberturaPulavel(String um) {
+		String dic = dicionario[1];
+		return um.replaceAll(" ", "").equals(dic);
 	}
 
 	@Override
-	public int getEncerramentoPulavel() {
-		return 4 ;
+	public boolean confirmarEncerramentoPulavel(String um) {
+		String dic = dicionario[4];
+		return um.replaceAll(" ", "").equals(dic);
 	}
 	
 }

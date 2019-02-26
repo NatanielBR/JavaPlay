@@ -2,7 +2,6 @@ package javaplay.central;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dialog.ModalityType;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -11,6 +10,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -28,9 +28,11 @@ public class JLista extends JList<JBarra> {
 	private JMenuItem inicio, parou;
 	private Player play;
 	private JLista eu;
+	private JFrame pai;
 	private JBarra selecionado;
-	public JLista() {
+	public JLista(JFrame p) {
 		super();
+		pai = p;
 		menu = new JPopupMenu();
 		inicio = new JMenuItem("Abrir no inicio");
 		parou = new JMenuItem("Abrir onde parou");
@@ -40,7 +42,7 @@ public class JLista extends JList<JBarra> {
 			public Component getListCellRendererComponent(JList<? extends JBarra> list, JBarra value,
 					int index, boolean isSelected, boolean cellHasFocus) {
 				if (isSelected) {
-					value.setBackground(Color.GRAY);
+					value.setBackground(Color.LIGHT_GRAY);
 				}else {
 					value.setBackground(Color.WHITE);
 				}
@@ -62,7 +64,6 @@ public class JLista extends JList<JBarra> {
 						}
 						selecionado = getSelectedValue();
 						menu.show(eu,e.getX(),e.getY());
-						getSelectionModel().clearSelection();
 					}
 					
 				}else {
@@ -78,10 +79,9 @@ public class JLista extends JList<JBarra> {
 				selecionado.setValue(b);
 				selecionado = null;
 			};
-			System.out.println(selecionado.getArquivo());
-			play = new Player(selecionado.getArquivo(),ina,0);
-			play.setModal(true);
-			play.setModalityType(ModalityType.DOCUMENT_MODAL);
+			play = new Player(selecionado.getArquivo(),ina,0,this);
+//			play.setModal(true);
+//			play.setModalityType(ModalityType.APPLICATION_MODAL);
 			play.setVisible(true);
 		});
 		parou.addActionListener((a)->{
@@ -92,12 +92,17 @@ public class JLista extends JList<JBarra> {
 				selecionado.setValue(b);
 				selecionado = null;
 			};
-			System.out.println(selecionado.getArquivo());
-			play = new Player(selecionado.getArquivo(),ina,selecionado.getValue());
-			play.setModal(true);
-			play.setModalityType(ModalityType.DOCUMENT_MODAL);
+			play = new Player(selecionado.getArquivo(),ina,selecionado.getValue(),this);
+//			play.setModal(true);
+//			play.setModalityType(ModalityType.APPLICATION_MODAL);
 			play.setVisible(true);
 		});
+	}
+	/**
+	 * @return the pai
+	 */
+	public JFrame getPai() {
+		return pai;
 	}
 	public void adicionarConteudo(List<File> arq) {
 		List<JBarra> convert = new ArrayList<>(arq.size());
@@ -112,6 +117,7 @@ public class JLista extends JList<JBarra> {
 		barr.setStringPainted(true);
 		Resultado res = BancoComunicador.instancia.obterResultado(info);
 		barr.setValue(res == null?0:res.getUltimoTempo());
+		barr.setToolTipText("Progresso: "+barr.getValue()+ "%");
 		barr.setBorderPainted(false);
 		return barr;
 	}

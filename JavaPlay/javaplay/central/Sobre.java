@@ -30,7 +30,7 @@ public class Sobre extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(null);
 		
-		JLabel lblJavaplay = new JLabel("JavaPlay 2.1.2-3");
+		JLabel lblJavaplay = new JLabel("JavaPlay 2.1.2-4");
 		lblJavaplay.setBounds(12, 12, 129, 15);
 		contentPanel.add(lblJavaplay);
 		
