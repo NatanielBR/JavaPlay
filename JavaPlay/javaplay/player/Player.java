@@ -34,7 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import javaplay.LongJSlider;
+import javaplay.central.LongJSlider;
 import javaplay.outros.InserirResultado;
 import javaplay.outros.Propriedades;
 import javaplay.thread.BancoComunicador;

@@ -22,7 +22,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javaplay.JavaPlay;
 import javaplay.outros.InserirResultado;
 import javaplay.outros.ObterResultado;
 import javaplay.outros.Resultado;
@@ -42,7 +41,7 @@ public class BancoComunicador{
 			con.createStatement().execute("CREATE TABLE IF NOT EXISTS Arquivos (\n" + "    Nome      TEXT,\n"
 					+ "    Caminho   TEXT    UNIQUE,\n" + "    Assistido INTEGER\n" + ");");
 		} catch (SQLException e) {
-			JavaPlay.error(e);
+			e.printStackTrace();
 		}
 	}
 	/**
@@ -60,7 +59,7 @@ public class BancoComunicador{
 			pre.setInt(4, inres.getUltimoTempo());
 			pre.execute();
 		} catch (SQLException e) {
-			JavaPlay.error(e);
+			e.printStackTrace();
 		}
 
 	}
@@ -81,7 +80,7 @@ public class BancoComunicador{
 			}
 			return resultado;
 		} catch (SQLException e) {
-			JavaPlay.error(e);
+			e.printStackTrace();
 		}
 		
 		return null;

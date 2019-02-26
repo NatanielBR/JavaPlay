@@ -1,5 +1,5 @@
 
-package javaplay;
+package javaplay.central;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;

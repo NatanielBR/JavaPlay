@@ -20,9 +20,9 @@ public class DiretorioMonitor implements Runnable {
 	private final File diretorio;
 	private final AtomicBoolean cancelar;
 	private List<File> cache;
-	private Consumer<Collection<File>> novidade;
+	private Consumer<List<File>> novidade;
 
-	public DiretorioMonitor(AtomicBoolean atoc, Consumer<Collection<File>> novid) {
+	public DiretorioMonitor(AtomicBoolean atoc, Consumer<List<File>> novid) {
 		Propriedades prop = Propriedades.instancia;
 		String dir = prop.getDir();
 		if (dir == null) {
@@ -69,6 +69,7 @@ public class DiretorioMonitor implements Runnable {
 				e.printStackTrace();
 			}
 			flist = Arrays.asList(FileUtils.listFiles(diretorio, new VideoFileFilter().getExtensions(), true).toArray(FileUtils.EMPTY_FILE_ARRAY));;
+			Collections.sort(flist);
 		}
 	}
 
