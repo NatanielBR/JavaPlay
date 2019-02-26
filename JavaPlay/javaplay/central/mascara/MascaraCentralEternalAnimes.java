@@ -17,7 +17,6 @@ public class MascaraCentralEternalAnimes implements MascaraCentral{
 		while (nome.endsWith(" ")) {
 			nome = nome.substring(0,nome.length()-1);
 		}
-		System.out.printf("'%s'\n",nome);
 		FANTASIA = nome;
 		ORIGINAL = f.getName();
 		FANTASIA_SEM_EP = nome.substring(0, nome.length()-3);

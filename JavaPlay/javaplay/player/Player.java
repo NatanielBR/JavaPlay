@@ -35,9 +35,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import javaplay.central.LongJSlider;
-import javaplay.outros.InserirResultado;
+import javaplay.outros.BancoComunicador;
 import javaplay.outros.Propriedades;
-import javaplay.thread.BancoComunicador;
 import uk.co.caprica.vlcj.player.base.AudioApi;
 import uk.co.caprica.vlcj.player.base.ChapterApi;
 import uk.co.caprica.vlcj.player.base.ChapterDescription;
@@ -146,7 +145,7 @@ public class Player extends JDialog {
 			@Override
 			public void finished(MediaPlayer mediaPlayer) {
 				int porc = 100;
-				new Thread(() -> BancoComunicador.instancia.inserirResultado(new InserirResultado(porc, arq))).start();
+				new Thread(() -> BancoComunicador.instancia.inserirResultado(porc, arq)).start();
 				con.accept(porc);
 				janela.dispose();
 			}
@@ -164,7 +163,7 @@ public class Player extends JDialog {
 				long max = progresso.getBarra().getLongMaximum();
 				long atu = progresso.getBarra().getLongValue();
 				int porc = (int) ((100 * atu) / max);
-				new Thread(() -> BancoComunicador.instancia.inserirResultado(new InserirResultado(porc, arq))).start();
+				new Thread(() -> BancoComunicador.instancia.inserirResultado(porc, arq)).start();
 				con.accept(porc);
 				comp.release();
 				super.windowClosing(e);

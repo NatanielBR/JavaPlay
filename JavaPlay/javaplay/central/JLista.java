@@ -19,10 +19,9 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 
 import javaplay.central.mascara.MascaraCentral;
-import javaplay.outros.ObterResultado;
+import javaplay.outros.BancoComunicador;
 import javaplay.outros.Resultado;
 import javaplay.player.Player;
-import javaplay.thread.BancoComunicador;
 
 public class JLista extends JList<JBarra> {
 	private JPopupMenu menu;
@@ -111,7 +110,7 @@ public class JLista extends JList<JBarra> {
 		barr.setMaximum(100);
 		barr.setMinimum(0);
 		barr.setStringPainted(true);
-		Resultado res = BancoComunicador.instancia.obterResultado(new ObterResultado(info));
+		Resultado res = BancoComunicador.instancia.obterResultado(info);
 		barr.setValue(res == null?0:res.getUltimoTempo());
 		barr.setBorderPainted(false);
 		return barr;

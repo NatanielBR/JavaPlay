@@ -46,7 +46,7 @@ public class Propriedades {
      * @return
      */
     public String getDir() {
-        return carregar().getProperty("dir", null);
+    	return carregar().getProperty("dir",null);
     }
     /**
      * Metodo para alterar o diretorio
@@ -62,8 +62,37 @@ public class Propriedades {
         }
     }
     
+    public void removerDir() {
+    	Properties prop = carregar();
+    	prop.remove("dir");
+    	try {
+			prop.store(saida(), "");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    
     public boolean isPularAbertura() {
     	return Boolean.parseBoolean(carregar().getProperty("pularAbertura", "false"));
+    }
+    public void setPularAbertura(boolean valor) {
+    	Properties prop =  carregar();
+    	prop.put("pularAbertura", Boolean.toString(valor));
+    	try {
+			prop.store(saida(), "");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    public void setProximoArquivo(boolean valor) {
+    	Properties prop =  carregar();
+    	prop.put("proximoArquivo", Boolean.toString(valor));
+    	try {
+			prop.store(saida(), "");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
     public boolean isProximoArquivo() {
     	return Boolean.parseBoolean(carregar().getProperty("proximoArquivo", "false"));

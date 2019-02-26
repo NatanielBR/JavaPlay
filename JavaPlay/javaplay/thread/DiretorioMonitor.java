@@ -17,9 +17,18 @@ import javaplay.outros.Propriedades;
 import uk.co.caprica.vlcj.filefilters.VideoFileFilter;
 
 public class DiretorioMonitor implements Runnable {
-	private final File diretorio;
+	private File diretorio;
+	/**
+	 * @param diretorio the diretorio to set
+	 */
+	public void setDiretorio() {
+		diretorio = new File(escolherDiretorio());
+		Propriedades prop = Propriedades.instancia;
+		prop.setDir(diretorio.getAbsolutePath());
+	}
+
 	private final AtomicBoolean cancelar;
-	private List<File> cache;
+	private static List<File> cache;
 	private Consumer<List<File>> novidade;
 
 	public DiretorioMonitor(AtomicBoolean atoc, Consumer<List<File>> novid) {
@@ -27,6 +36,7 @@ public class DiretorioMonitor implements Runnable {
 		String dir = prop.getDir();
 		if (dir == null) {
 			diretorio = new File(escolherDiretorio());
+			prop.setDir(diretorio.getAbsolutePath());
 
 		} else {
 			diretorio = new File(dir);
