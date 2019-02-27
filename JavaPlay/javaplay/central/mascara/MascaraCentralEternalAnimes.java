@@ -1,15 +1,15 @@
 package javaplay.central.mascara;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public class MascaraCentralEternalAnimes implements MascaraCentral{
 	// [EA]Log_Horizon_01_[1280x720][BDRIP][Hi10p][758A8215]
 	private final String ORIGINAL;
 	private final String FANTASIA;
-	private final File ARQUIVO;
+	private final Path ARQUIVO;
 	private final String FANTASIA_SEM_EP;
-	public MascaraCentralEternalAnimes(File f) {
-		String nome = f.getName();
+	public MascaraCentralEternalAnimes(Path f) {
+		String nome = f.getFileName().toString();
 		nome = nome.substring(4);
 		nome = nome.substring(0, nome.indexOf("[")) ;
 		nome = nome.replace("_", " ");
@@ -18,7 +18,7 @@ public class MascaraCentralEternalAnimes implements MascaraCentral{
 			nome = nome.substring(0,nome.length()-1);
 		}
 		FANTASIA = nome;
-		ORIGINAL = f.getName();
+		ORIGINAL = f.getFileName().toString();
 		FANTASIA_SEM_EP = nome.substring(0, nome.length()-3);
 		ARQUIVO = f;
 	}
@@ -33,7 +33,7 @@ public class MascaraCentralEternalAnimes implements MascaraCentral{
 	/**
 	 * @return the aRQUIVO
 	 */
-	public File getArquivo() {
+	public Path getArquivo() {
 		return ARQUIVO;
 	}
 	public String getNomeDaMascara() {

@@ -25,10 +25,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -43,7 +42,6 @@ import uk.co.caprica.vlcj.player.base.AudioApi;
 import uk.co.caprica.vlcj.player.base.ChapterApi;
 import uk.co.caprica.vlcj.player.base.ChapterDescription;
 import uk.co.caprica.vlcj.player.base.ControlsApi;
-import uk.co.caprica.vlcj.player.base.LogoApi;
 import uk.co.caprica.vlcj.player.base.MarqueeApi;
 import uk.co.caprica.vlcj.player.base.MarqueePosition;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
@@ -73,15 +71,15 @@ public class Player extends JFrame {
 	private JLista lista;
 	private int mult = 10;
 	private boolean ismult = false;
-	private boolean audioMudança = false;
+	private boolean audioMudanca = false;
 	private boolean isPularAbertura;
 	private boolean isProximoArquivo;
 
-	public Player(File arq, Consumer<Integer> con, int tim, JLista lista) {
+	public Player(Path arq, Consumer<Integer> con, int tim, JLista lista) {
 		this(arq, con, tim == 100 ? 0 : tim, MascaraPlayer.descobrirMascara(arq), lista);
 	}
 
-	public Player(File arq, Consumer<Integer> con, int temp, MascaraPlayer masc, JLista lista) {
+	public Player(Path arq, Consumer<Integer> con, int temp, MascaraPlayer masc, JLista lista) {
 		setTitle("Player");
 		EmbeddedMediaPlayerComponent comp = new EmbeddedMediaListPlayerComponent();
 		JPanel inferior = new JPanel(new BorderLayout());
@@ -123,10 +121,10 @@ public class Player extends JFrame {
 
 			@Override
 			public void volumeChanged(MediaPlayer mediaPlayer, float volume) {
-				if (!audioMudança)
+				if (!audioMudanca)
 					return;
 				alterarAudio(audio.volume());
-				audioMudança = false;
+				audioMudanca = false;
 			}
 
 			@Override
@@ -154,7 +152,7 @@ public class Player extends JFrame {
 			@Override
 			public void windowOpened(WindowEvent we) {
 				super.windowOpened(we);
-				play.media().prepare(arq.getAbsolutePath());
+				play.media().prepare(arq.toAbsolutePath().toString());
 				lista.getPai().setVisible(false);
 				controle.play();
 			}
@@ -182,7 +180,7 @@ public class Player extends JFrame {
 			} else if (vol < 0) {
 				vol = 0;
 			}
-			audioMudança = true;
+			audioMudanca = true;
 			audio.setVolume(vol);
 		});
 

@@ -16,7 +16,7 @@
  ******************************************************************************/
 package javaplay.outros;
 
-import java.io.File;
+import java.nio.file.Path;
 /**
  * Classe para simbolizar o Resultado
  * @author natan
@@ -25,12 +25,12 @@ import java.io.File;
 public class Resultado{
 
 	private final  int ultimoTempo;
-	private final File arquivo;
-	public Resultado(int ultimoTempo, File file) {
+	private final Path arquivo;
+	public Resultado(int ultimoTempo, Path file) {
 		this.ultimoTempo = ultimoTempo;
 		this.arquivo = file;
 	}
-	public File getArquivo() {
+	public Path getArquivo() {
 		return arquivo;
 	}
 	public int getUltimoTempo() {

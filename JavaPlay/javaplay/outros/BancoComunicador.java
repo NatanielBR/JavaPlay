@@ -17,6 +17,7 @@
 package javaplay.outros;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -51,13 +52,13 @@ public class BancoComunicador{
 	 * Metodo para inserir o tempo e o arquivo  no banco de dados
 	 * @param inres
 	 */
-	public void inserirResultado(int ultimoTempo, File arquivo) {
+	public void inserirResultado(int ultimoTempo, Path arquivo) {
 		PreparedStatement pre;
 		try {
 			pre = con.prepareStatement(
 					"INSERT INTO Arquivos (Nome,Caminho,Assistido)VALUES (?,?,?) on conflict(Caminho) do update set Assistido=?;");
-			pre.setString(1, arquivo.getName());
-			pre.setString(2, arquivo.getAbsolutePath());
+			pre.setString(1, arquivo.getFileName().toString());
+			pre.setString(2, arquivo.toAbsolutePath().toString());
 			pre.setInt(3, ultimoTempo);
 			pre.setInt(4, ultimoTempo);
 			pre.execute();
@@ -71,11 +72,11 @@ public class BancoComunicador{
 	 * @param obter
 	 * @return
 	 */
-	public Resultado obterResultado(File arquivo) {
+	public Resultado obterResultado(Path arquivo) {
 		
 		try {
 			ResultSet re = con.createStatement()
-			.executeQuery("select * from Arquivos where Nome == '" + arquivo.getName() + "'");
+			.executeQuery("select * from Arquivos where Nome == '" + arquivo.getFileName().toString() + "'");
 			Resultado resultado = null;
 			while (re.next()) {
 				int a = re.getInt(3);

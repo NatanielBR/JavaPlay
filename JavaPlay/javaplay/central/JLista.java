@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -104,12 +104,12 @@ public class JLista extends JList<JBarra> {
 	public JFrame getPai() {
 		return pai;
 	}
-	public void adicionarConteudo(List<File> arq) {
+	public void adicionarConteudo(List<Path> arq) {
 		List<JBarra> convert = new ArrayList<>(arq.size());
 		arq.forEach((a)->convert.add(criarBarra(a)));
 		trocarLista(convert);
 	}
-	private JBarra criarBarra(File info) {
+	private JBarra criarBarra(Path info) {
 		MascaraCentral masc = MascaraCentral.obterMascaraCompativel(info);
 		JBarra barr = masc == null ? new JBarra(info):new JBarra(masc);
 		barr.setMaximum(100);

@@ -1,18 +1,18 @@
 package javaplay.central;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import javax.swing.JProgressBar;
 
 import javaplay.central.mascara.MascaraCentral;
 
 public class JBarra extends JProgressBar {
-	private final File arquivo;
+	private final Path arquivo;
 	private final MascaraCentral mascara;
-	public JBarra(File arq) {
+	public JBarra(Path arq) {
 		arquivo = arq;
 		mascara = null;
-		setString(arq.getName());
+		setString(arq.getFileName().toString());
 	}
 	public JBarra(MascaraCentral mascara) {
 		arquivo = mascara.getArquivo();
@@ -22,7 +22,7 @@ public class JBarra extends JProgressBar {
 	/**
 	 * @return the arquivo
 	 */
-	public File getArquivo() {
+	public Path getArquivo() {
 		return arquivo;
 	}
 	/**

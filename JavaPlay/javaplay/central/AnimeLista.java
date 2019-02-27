@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,27 +30,28 @@ public class AnimeLista {
 	private JFrame frame;
 	private JTabbedPane Coluna;
 	private AtomicBoolean encerrar;
-	private Consumer<List<File>> novidade;
+	private Consumer<List<Path>> novidade;
 	private DiretorioMonitor monitor;
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 		new Propriedades();
+		
 		new BancoComunicador();
 		AnimeLista window = new AnimeLista();
 		window.frame.setVisible(true);
 		
 	}
 	
-	public void dividirPorMascara(List<File> arq) {
-		HashMap<String,List<File>> listas = new HashMap<>();
+	public void dividirPorMascara(List<Path> arq) {
+		HashMap<String,List<Path>> listas = new HashMap<>();
 		Coluna.removeAll();
-		for (File f : arq) {
+		for (Path f : arq) {
 			MascaraCentral masc = MascaraCentral.obterMascaraCompativel(f);
 			if (masc == null) continue;
 			if (listas.get(masc.getFantasiaSemEp())== null) {
-				List<File> arqs = new ArrayList<>();
+				List<Path> arqs = new ArrayList<>();
 				arqs.add(f);
 				listas.put(masc.getFantasiaSemEp(), arqs);
 			}else {

@@ -1,6 +1,6 @@
 package javaplay.player.mascara;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public interface MascaraPlayer {
 	/**
@@ -26,8 +26,8 @@ public interface MascaraPlayer {
 	 */
 	public String getProximo();
 	
-	public static MascaraPlayer descobrirMascara(File arq) {
-		if (arq.getName().startsWith("[EA]")) {
+	public static MascaraPlayer descobrirMascara(Path arq) {
+		if (arq.getFileName().startsWith("[EA]")) {
 			return new MascaraPlayerEternalAnimes();
 		}
 		return null;

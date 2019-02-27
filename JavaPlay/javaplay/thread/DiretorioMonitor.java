@@ -2,22 +2,22 @@ package javaplay.thread;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.swing.JFileChooser;
-
-import org.apache.commons.io.FileUtils;
 
 import javaplay.outros.Propriedades;
 import uk.co.caprica.vlcj.filefilters.VideoFileFilter;
 
 public class DiretorioMonitor implements Runnable {
 	private File diretorio;
+
 	/**
 	 * @param diretorio the diretorio to set
 	 */
@@ -28,10 +28,10 @@ public class DiretorioMonitor implements Runnable {
 	}
 
 	private final AtomicBoolean cancelar;
-	private static List<File> cache;
-	private Consumer<List<File>> novidade;
+	private static List<Path> cache;
+	private Consumer<List<Path>> novidade;
 
-	public DiretorioMonitor(AtomicBoolean atoc, Consumer<List<File>> novid) {
+	public DiretorioMonitor(AtomicBoolean atoc, Consumer<List<Path>> novid) {
 		Propriedades prop = Propriedades.instancia;
 		String dir = prop.getDir();
 		if (dir == null) {
@@ -43,43 +43,53 @@ public class DiretorioMonitor implements Runnable {
 		}
 		novidade = novid;
 		cancelar = atoc;
-		
+
 		new Thread(this).start();
 	}
 
 	@Override
 	public void run() {
-		List<File> flist = Arrays.asList(FileUtils.listFiles(diretorio, new VideoFileFilter().getExtensions(), true).toArray(FileUtils.EMPTY_FILE_ARRAY));
-		Collections.sort(flist);
+		VideoFileFilter filtro = new VideoFileFilter();
+		List<Path> flist = null;
+		try {
+			flist = Files.list(diretorio.toPath()).filter((a) -> filtro.accept(a.toFile()))
+					.collect(Collectors.toList());
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+//		Files.list(diretorio.toPath());
+//		Collections.sort(flist);
 		while (!cancelar.get()) {
-			if (cache ==  null) {
+			if (cache == null && flist != null) {
 				novidade.accept(flist);
 				cache = flist;
-			}else {
-				if (cache.size()!=flist.size()) {
+			} else {
+				if (cache.size() != flist.size()) {
 					novidade.accept(flist);
 					cache = flist;
-				}else {
-					for (File f : cache) {
-						try {
-							if (!FileUtils.directoryContains(diretorio, f)) {
-								novidade.accept(flist);
-								cache = flist;
-								break;
-							}
-						} catch (IOException e) {
-							e.printStackTrace();
+				} else {
+					// basicamente ele olha se no cache todos existem, se sim, ignora se nao usa
+					// da nova lista
+					for (Path p : cache) {
+						if (!Files.exists(p, LinkOption.NOFOLLOW_LINKS)) {
+							novidade.accept(flist);
+							cache = flist;
+							break;
 						}
 					}
 				}
+				
 			}
 			try {
 				Thread.sleep(2000);
-			} catch (InterruptedException e) {
+				flist = Files.list(diretorio.toPath()).filter((a) -> filtro.accept(a.toFile()))
+						.collect(Collectors.toList());
+				;
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			flist = Arrays.asList(FileUtils.listFiles(diretorio, new VideoFileFilter().getExtensions(), true).toArray(FileUtils.EMPTY_FILE_ARRAY));;
-			Collections.sort(flist);
+			
 		}
 	}
 

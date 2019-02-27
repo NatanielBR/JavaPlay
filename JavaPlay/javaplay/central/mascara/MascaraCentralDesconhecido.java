@@ -1,26 +1,27 @@
 package javaplay.central.mascara;
 
 import java.io.File;
+import java.nio.file.Path;
 
 public class MascaraCentralDesconhecido implements MascaraCentral {
-	private final File arq;
-	public MascaraCentralDesconhecido(File a) {
+	private final Path arq;
+	public MascaraCentralDesconhecido(Path a) {
 		arq = a;
 	}
 
 	@Override
 	public String getFantasia() {
-		return arq.getName();
+		return arq.getFileName().toString();
 	}
 
 	@Override
-	public File getArquivo() {
+	public Path getArquivo() {
 		return arq;
 	}
 
 	@Override
 	public String getOriginal() {
-		return arq.getName();
+		return arq.getFileName().toString();
 	}
 
 	@Override
