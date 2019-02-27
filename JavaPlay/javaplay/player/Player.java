@@ -225,7 +225,7 @@ public class Player extends JFrame {
 	}
 
 	public void alterarAudio(int val) {
-		marca.setText(Strings.getString("0") + val);
+		marca.setText("Volume: " + val);
 		marca.setColour(Color.yellow);
 		marca.setTimeout(500);
 	}
@@ -354,21 +354,21 @@ public class Player extends JFrame {
 			String time;
 			switch (quand) {
 			case 0:
-				time = String.format(Strings.getString("6"), secs);
+				time = String.format("%02d", secs);
 				break;
 			case 1:
-				time = String.format(Strings.getString("7"), mins, secs);
+				time = String.format("%02d:%02d", mins, secs);
 				break;
 			case 2:
-				time = String.format(Strings.getString("8"), horas, mins, secs);
+				time = String.format("%02d:%02d:%02d", horas, mins, secs);
 				break;
 			default:
 				if (horas > 0) {
-					time = String.format(Strings.getString("9"), horas, mins, secs);
+					time = String.format("%02d:%02d:%02d", horas, mins, secs);
 				} else if (mins > 0) {
-					time = String.format(Strings.getString("10"), mins, secs);
+					time = String.format("%02d:%02d", mins, secs);
 				} else {
-					time = String.format(Strings.getString("11"), secs);
+					time = String.format("%02d", secs);
 				}
 				break;
 			}

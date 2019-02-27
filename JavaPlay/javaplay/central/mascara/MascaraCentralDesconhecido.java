@@ -25,13 +25,8 @@ public class MascaraCentralDesconhecido implements MascaraCentral {
 	}
 
 	@Override
-	public String getNomeDaMascara() {
-		return "Desconhecido";
-	}
-
-	@Override
 	public String getFantasiaSemEp() {
-		return getNomeDaMascara();
+		return "Desconhecido";
 	}
 
 }

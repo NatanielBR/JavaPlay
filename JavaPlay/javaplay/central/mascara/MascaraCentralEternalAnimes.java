@@ -36,9 +36,6 @@ public class MascaraCentralEternalAnimes implements MascaraCentral{
 	public Path getArquivo() {
 		return ARQUIVO;
 	}
-	public String getNomeDaMascara() {
-		return "Eternal Animes";
-	}
 	/**
 	 * @return the original
 	 */

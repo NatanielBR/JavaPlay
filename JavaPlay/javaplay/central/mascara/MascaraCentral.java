@@ -7,7 +7,6 @@ public interface MascaraCentral {
 	public String getFantasia();
 	public Path getArquivo();
 	public String getOriginal();
-	public String getNomeDaMascara();
 	public String getFantasiaSemEp();
 
 	public static MascaraCentral obterMascaraCompativel(Path arq) {
@@ -15,6 +14,8 @@ public interface MascaraCentral {
 		
 		if (nome.startsWith("[EA]")) {
 			return new MascaraCentralEternalAnimes(arq);
+		}else if (nome.contains("Anbient")){
+			return new MascaraCentralAnbient(arq);
 		}else {
 			return new MascaraCentralDesconhecido(arq);
 		}

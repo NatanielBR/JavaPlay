@@ -39,7 +39,7 @@ public class Sobre extends JDialog {
 		txtrJavaplayUma.setBackground(null);
 		txtrJavaplayUma.setLineWrap(true);
 		txtrJavaplayUma.setWrapStyleWord(true);
-		txtrJavaplayUma.setText("JavaPlay √© uma aplica√ß√£o destinado aos f√£s de animes ou series em geral.\n\nDesenvolvido em java e tendo como base o VLC, ele suporta os mais variados formatos de media e possui compatibilidade com qualquer Sistema que rode java.");
+		txtrJavaplayUma.setText("JavaPlay È uma aplicaÁ„o destinado aos f„s de animes ou series em geral.\n\nDesenvolvido em java e tendo como base o VLC, ele suporta os mais variados formatos de media e possui compatibilidade com qualquer Sistema que rode java.");
 		txtrJavaplayUma.setBounds(159, 12, 213, 331);
 		contentPanel.add(txtrJavaplayUma);
 		
