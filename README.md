@@ -27,7 +27,6 @@ Um player feito em java e utilizando a biblioteca do VLC voltado com recursos pa
 # Agradecimentos
 Esse programa nao foi feito unicamente por mim, nela existe bibliotecas que foram criadas por outras pessoas.
 - VLCJ - Usado para se "comunicar" com o VLC [Reporsitorio](https://github.com/caprica/vlcj)
-- Apache Commons IO - Usado para "ver" os arquivos no diretorio (Talvez vai sair :) ) [Reporsitorio](https://github.com/apache/commons-io)
 - SQLITE JDBC - Usado para se "comunicar" com o banco de dados (O arquivo "Database.db3") [Reporsitorio](https://github.com/xerial/sqlite-jdbc)
 
 - LongJSliter - Originalmente é DoubleJSliter porém foi modificado para ser Long e merece meus agradecimentos. [Projeto](https://github.com/nasa/trick)
