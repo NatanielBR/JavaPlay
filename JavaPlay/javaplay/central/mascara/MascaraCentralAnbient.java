@@ -24,7 +24,6 @@ public class MascaraCentralAnbient implements MascaraCentral {
 
 	@Override
 	public String getFantasiaSemEp() {
-		// TODO Auto-generated method stub
 		return FANTASIA_SEM_EP;
 	}
 	
