@@ -10,9 +10,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import javax.swing.JFileChooser;
-
 import javaplay.outros.Propriedades;
+import javaplay.outros.Utilitario;
 import uk.co.caprica.vlcj.filefilters.VideoFileFilter;
 
 public class DiretorioMonitor implements Runnable {
@@ -22,7 +21,7 @@ public class DiretorioMonitor implements Runnable {
 	 * @param diretorio the diretorio to set
 	 */
 	public void setDiretorio() {
-		diretorio = new File(escolherDiretorio());
+		diretorio = new File(Utilitario.escolherDiretorio("Escolha o local da biblioteca"));
 		Propriedades prop = Propriedades.instancia;
 		prop.setDir(diretorio.getAbsolutePath());
 	}
@@ -35,8 +34,7 @@ public class DiretorioMonitor implements Runnable {
 		Propriedades prop = Propriedades.instancia;
 		String dir = prop.getDir();
 		if (dir == null) {
-			diretorio = new File(escolherDiretorio());
-			prop.setDir(diretorio.getAbsolutePath());
+			setDiretorio();
 
 		} else {
 			diretorio = new File(dir);
@@ -91,21 +89,6 @@ public class DiretorioMonitor implements Runnable {
 			}
 			
 		}
-	}
-
-	private String escolherDiretorio() {
-		String dir = null;
-		JFileChooser chooser = new JFileChooser();
-		chooser.setCurrentDirectory(new java.io.File("."));
-		chooser.setDialogTitle("Escolha o diretorio");
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		chooser.setAcceptAllFileFilterUsed(false);
-		if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-			dir = chooser.getSelectedFile().getAbsolutePath();
-		} else {
-			System.exit(0);
-		}
-		return dir;
 	}
 
 }
