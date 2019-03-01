@@ -6,6 +6,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -15,6 +16,7 @@ import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
+import javax.swing.JTabbedPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 
@@ -30,10 +32,14 @@ public class JLista extends JList<JBarra> {
 	private Player play;
 	private JLista eu;
 	private JFrame pai;
+	private JTabbedPane coluna;
+	private String nome;
 	private JBarra selecionado;
-	public JLista(JFrame p) {
+	public JLista(JFrame p,JTabbedPane c, String s) {
 		super();
 		pai = p;
+		coluna = c;
+		nome = s;
 		menu = new JPopupMenu();
 		inicio = new JMenuItem("Abrir no inicio");
 		parou = new JMenuItem("Abrir onde parou");
@@ -80,8 +86,8 @@ public class JLista extends JList<JBarra> {
 				selecionado.setValue(b);
 				selecionado = null;
 			};
-			play = new Player(selecionado.getArquivo(),ina,0,this);
 			play.setVisible(true);
+			play.play(selecionado.getArquivo(), 0);
 		});
 		parou.addActionListener((a)->{
 			if (play != null && play.isVisible()) {
@@ -91,7 +97,8 @@ public class JLista extends JList<JBarra> {
 				selecionado.setValue(b);
 				selecionado = null;
 			};
-			play = new Player(selecionado.getArquivo(),ina,selecionado.getValue(),this);
+			play.play(selecionado.getArquivo(), selecionado.getValue());
+//			play = new Player(selecionado.getArquivo(),ina,selecionado.getValue(),this);
 			play.setVisible(true);
 		});
 	}
@@ -101,10 +108,12 @@ public class JLista extends JList<JBarra> {
 	public JFrame getPai() {
 		return pai;
 	}
-	public void adicionarConteudo(List<Path> arq) {
-		List<JBarra> convert = new ArrayList<>(arq.size());
-		arq.forEach((a)->convert.add(criarBarra(a)));
-		trocarLista(convert);
+	public void devolver() {
+//		coluna.removeTabAt(coluna.indexOfTab(nome));
+		coluna.addTab(nome, this);
+	}
+	public void adicionarConteudo(HashMap<String, List<Path>> arq) {
+		trocarLista(criarBarra(arq.get(nome)));
 	}
 	private JBarra criarBarra(Path info) {
 		MascaraCentral masc = MascaraCentral.obterMascaraCompativel(info);
@@ -117,6 +126,12 @@ public class JLista extends JList<JBarra> {
 		barr.setToolTipText("Progresso: "+barr.getValue()+ "%");
 		barr.setBorderPainted(false);
 		return barr;
+	}
+	private List<JBarra> criarBarra(List<Path> info) {
+		List<JBarra> barras = new ArrayList<JBarra>();
+		info.forEach((a)->barras.add(criarBarra(a)));
+		play = new Player(info, this);
+		return barras;
 	}
 	private void trocarLista(List<JBarra> novo) {
 		DefaultListModel<JBarra> barras = new DefaultListModel<>();

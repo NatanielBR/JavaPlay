@@ -83,8 +83,8 @@ public class AnimeLista {
 			}
 		}
 		listas.keySet().forEach((mascara) -> {
-			JLista lis = new JLista(frame);
-			lis.adicionarConteudo(listas.get(mascara));
+			JLista lis = new JLista(frame,Coluna,mascara);
+			lis.adicionarConteudo(listas);
 			Coluna.addTab(mascara, lis);
 		});
 

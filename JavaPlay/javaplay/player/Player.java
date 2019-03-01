@@ -26,16 +26,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.ListModel;
-import javax.swing.SwingUtilities;
 
 import javaplay.central.JBarra;
 import javaplay.central.JLista;
@@ -48,7 +44,6 @@ import uk.co.caprica.vlcj.player.base.MarqueePosition;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaListPlayerComponent;
-import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
 import uk.co.caprica.vlcj.player.embedded.fullscreen.adaptive.AdaptiveFullScreenStrategy;
 
@@ -61,50 +56,65 @@ public class Player extends JFrame {
 	// double porc = ((play.getTime() * 100) / play.getLength());
 
 	private EmbeddedMediaPlayer play;
-	private EmbeddedMediaPlayerComponent comp;
+	private EmbeddedMediaListPlayerComponent comp;
 	private MascaraPlayer mascara;
-	private JPopupMenu pop;
+	private JPanel esquerda;
 	private Progresso progresso;
 	private JPanel inferior;
 	private JFrame janela;
 	private JLista lista;
+	private List<Path> arquivos;
+	private Path atual;
 	private int mult = 10;
+	private int temp = 0;
 	private boolean ismult = false;
 	private boolean audioMudanca = false;
 	private boolean isPularAbertura;
 	private boolean isProximoArquivo;
 
-	public Player(Path arq, Consumer<Integer> con, int tim, JLista lista) {
-		this(arq, con, tim == 100 ? 0 : tim, MascaraPlayer.descobrirMascara(arq), lista);
-	}
-
-	public Player(Path arq, Consumer<Integer> con, int temp, MascaraPlayer masc, JLista lista) {
+	public Player(List<Path> arq, JLista lista) {
 		setTitle("Player");
 		comp = new EmbeddedMediaListPlayerComponent();
 		inferior = new JPanel(new BorderLayout());
 		progresso = new Progresso();
-		pop = new JPopupMenu();
+		esquerda = new JPanel();
 		
-		mascara = masc;
 		janela = this;
+		arquivos = arq;
 		play = comp.mediaPlayer();
 		this.lista = lista;
-
+		
+		arq.forEach((a)->{
+			comp.mediaListPlayer().list().items().add(a.toAbsolutePath().toString());
+		});
+		
 		play.fullScreen().strategy(new AdaptiveFullScreenStrategy(janela));
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setLayout(new BorderLayout());
 		
-		setarPropriedades(masc);
-		configurarPopup();
-		configurarEventoDoPlayer(temp);
-		configurarEventoDaJanela(arq,con);
+		setarPropriedades(null);
+		configurarEsquerda();
+		configurarEventoDoPlayer();
+		configurarEventoDaJanela(arq);
 		
 		inferior.add(progresso, BorderLayout.NORTH);
 
 		add(comp, BorderLayout.CENTER);
 		add(inferior, BorderLayout.SOUTH);
+		add(esquerda,BorderLayout.EAST);
 	}
-
+	public void play(Path index, int tempo) {
+		if (comp.isDisplayable()) {
+			comp.mediaListPlayer().controls().play(arquivos.indexOf(index));
+			comp.mediaPlayer().controls().skipTime(tempo);
+		}else {
+			atual = index;
+			temp = tempo;
+			System.out.println(tempo);
+		}
+//		comp.mediaListPlayer().controls().play(0);
+		comp.mediaPlayer().controls().skipTime(tempo);
+	}
 	private void setarPropriedades(MascaraPlayer masc) {
 		if (masc != null) {
 			isPularAbertura = Propriedades.instancia.isPularAbertura();
@@ -126,23 +136,18 @@ public class Player extends JFrame {
 		play.marquee().setColour(Color.yellow);
 		play.marquee().setTimeout(500);
 	}
-	private void configurarPopup() {
-		ListModel<JBarra> barras = lista.getModel();
-		JMenu eps = new JMenu("Lista");
-		for (int i = 0; i < barras.getSize();i++) {
-			eps.add(barras.getElementAt(i));
-		}
-		pop.setLightWeightPopupEnabled(true);
-		pop.add(eps);
+	private void configurarEsquerda() {
+		esquerda.add(lista);
 	}
-	private void configurarEventoDaJanela(Path arq, Consumer<Integer> con) {
+	private void configurarEventoDaJanela(List<Path> arq) {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowOpened(WindowEvent we) {
 				super.windowOpened(we);
-				play.media().prepare(arq.toAbsolutePath().toString());
 				lista.getPai().setVisible(false);
-				play.controls().play();
+				System.out.println("dadasd");
+				comp.mediaListPlayer().controls().play(arquivos.indexOf(atual));
+				comp.mediaPlayer().controls().skipTime(temp);
 			}
 
 			@Override
@@ -153,16 +158,15 @@ public class Player extends JFrame {
 				long max = progresso.getBarra().getLongMaximum();
 				long atu = progresso.getBarra().getLongValue();
 				int porc = (int) ((100 * atu) / max);
-				new Thread(() -> BancoComunicador.instancia.inserirResultado(porc, arq)).start();
-				con.accept(porc);
-				pop.setVisible(false);
+//				new Thread(() -> BancoComunicador.instancia.inserirResultado(porc, arq)).start();
 				lista.getPai().setVisible(true);
+				lista.devolver();
 				janela.dispose();
 				super.windowClosing(e);
 			}
 		});
 	}
-	private void configurarEventoDoPlayer(int temp) {
+	private void configurarEventoDoPlayer() {
 		play.events().addMediaPlayerEventListener((new MediaPlayerEventAdapter() {
 			@Override
 			public void mediaPlayerReady(MediaPlayer mediaPlayer) {
@@ -230,6 +234,7 @@ public class Player extends JFrame {
 					play.controls().pause();
 					break;
 				case KeyEvent.VK_F:
+					esquerda.setVisible(play.fullScreen().isFullScreen());
 					play.fullScreen().set(!play.fullScreen().isFullScreen());
 					break;
 				case KeyEvent.VK_LEFT:
@@ -250,6 +255,9 @@ public class Player extends JFrame {
 					audioMudanca = true;
 					play.audio().setVolume(vol);
 					break;
+				case KeyEvent.VK_L:
+					esquerda.setVisible(!esquerda.isVisible());
+					break;
 				}
 			}
 
@@ -257,18 +265,6 @@ public class Player extends JFrame {
 			public void keyReleased(KeyEvent e) {
 				ismult = e.isControlDown();
 			}
-		});
-		comp.videoSurfaceComponent().addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (pop.isVisible()) {
-					pop.setVisible(false);
-					return;
-				}
-				if (SwingUtilities.isRightMouseButton(e)) {
-					pop.setVisible(true);
-					pop.setLocation(e.getXOnScreen(),e.getYOnScreen());
-				}
-			};
 		});
 	}
 	private int confirmarVolume(int vol) {
@@ -360,10 +356,10 @@ public class Player extends JFrame {
 						barra.setValue(b);
 					};
 					lista.setSelectedIndex(ind + 1);
-					Player play = new Player(barra.getArquivo(), ina, barra.getValue(), lista);
+//					Player play = new Player(barra.getArquivo(), ina, barra.getValue(), lista);
 					janela.dispatchEvent(new WindowEvent(janela, WindowEvent.WINDOW_CLOSING));
 					lista.repaint();
-					play.setVisible(true);
+//					play.setVisible(true);
 				}).start();
 			}
 		}
