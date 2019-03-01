@@ -25,13 +25,12 @@ import uk.co.caprica.vlcj.player.base.ChapterApi;
  * 
  * @since Trick 10
  */
-public class LongJSlider extends JSlider implements ChangeListener {
+public class LongJSlider extends JSlider {
 
 	// ========================================
 	// Public data
 	// ========================================
 	// public final static Long Long_FACTOR = 100.0;
-	private ChapterApi capit;
 
 	// ========================================
 	// Protected data
@@ -56,7 +55,6 @@ public class LongJSlider extends JSlider implements ChangeListener {
 		setLongMinimum(0);
 		setLongMaximum(100);
 		setLongValue(50);
-		addChangeListener(this);
 
 	}
 
@@ -75,7 +73,6 @@ public class LongJSlider extends JSlider implements ChangeListener {
 		setLongMaximum(max);
 		setLongValue(val);
 		setLabel("Current Value: " + val);
-		addChangeListener(this);
 	}
 
 	public LongJSlider(Long min, Long max, Long val, Long factor) {
@@ -86,7 +83,6 @@ public class LongJSlider extends JSlider implements ChangeListener {
 		setLongMaximum(max);
 		setLongValue(val);
 		setLabel("Current Value: " + val);
-		addChangeListener(this);
 	}
 
 	/**
@@ -154,28 +150,6 @@ public class LongJSlider extends JSlider implements ChangeListener {
 	public void setLongValue(long val) {
 		setValue((int) (val));
 //		setToolTipText(Long.toString(val));
-	}
-
-	// ========================================
-	// Methods
-	// ========================================
-	/**
-	 * Required by ChangeListener.
-	 */
-	public void stateChanged(ChangeEvent e) {
-		LongJSlider slider = (LongJSlider) e.getSource();
-		if (!slider.getValueIsAdjusting()) {
-			if (capit == null) {
-				return;
-			}
-			long atu = getLongValue();
-//			setToolTipText(slider.getLongValue().toString());
-//			setToolTipText(slider.getLongValue() + "-" + capit.descriptions().get(capit.chapter()).name());
-		}
-	}
-
-	public void setCapit(ChapterApi capit) {
-		this.capit = capit;
 	}
 
 	// ========================================

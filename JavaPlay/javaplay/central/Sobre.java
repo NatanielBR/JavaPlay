@@ -14,6 +14,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 
+import uk.co.caprica.vlcj.support.Info;
+
 public class Sobre extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
@@ -30,7 +32,7 @@ public class Sobre extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(null);
 		
-		JLabel lblJavaplay = new JLabel("JavaPlay 2.1.2-8");
+		JLabel lblJavaplay = new JLabel("JavaPlay 2.1.3-9");
 		lblJavaplay.setBounds(12, 12, 129, 15);
 		contentPanel.add(lblJavaplay);
 		

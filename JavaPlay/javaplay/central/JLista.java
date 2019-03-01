@@ -21,6 +21,7 @@ import javax.swing.SwingUtilities;
 import javaplay.central.mascara.MascaraCentral;
 import javaplay.outros.BancoComunicador;
 import javaplay.outros.Resultado;
+import javaplay.player.NovoPlayer;
 import javaplay.player.Player;
 
 public class JLista extends JList<JBarra> {
@@ -80,8 +81,6 @@ public class JLista extends JList<JBarra> {
 				selecionado = null;
 			};
 			play = new Player(selecionado.getArquivo(),ina,0,this);
-//			play.setModal(true);
-//			play.setModalityType(ModalityType.APPLICATION_MODAL);
 			play.setVisible(true);
 		});
 		parou.addActionListener((a)->{
@@ -93,8 +92,6 @@ public class JLista extends JList<JBarra> {
 				selecionado = null;
 			};
 			play = new Player(selecionado.getArquivo(),ina,selecionado.getValue(),this);
-//			play.setModal(true);
-//			play.setModalityType(ModalityType.APPLICATION_MODAL);
 			play.setVisible(true);
 		});
 	}
