@@ -1,6 +1,5 @@
 package javaplay.central.mascara;
 
-import java.io.File;
 import java.nio.file.Path;
 
 public class MascaraCentralDesconhecido implements MascaraCentral {

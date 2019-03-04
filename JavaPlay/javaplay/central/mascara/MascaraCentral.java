@@ -1,6 +1,5 @@
 package javaplay.central.mascara;
 
-import java.io.File;
 import java.nio.file.Path;
 
 public interface MascaraCentral {

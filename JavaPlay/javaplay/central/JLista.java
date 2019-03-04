@@ -21,7 +21,6 @@ import javax.swing.SwingUtilities;
 import javaplay.central.mascara.MascaraCentral;
 import javaplay.outros.BancoComunicador;
 import javaplay.outros.Resultado;
-import javaplay.player.NovoPlayer;
 import javaplay.player.Player;
 
 public class JLista extends JList<JBarra> {

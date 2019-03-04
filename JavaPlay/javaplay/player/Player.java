@@ -30,12 +30,7 @@ import java.util.function.Consumer;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.ListModel;
-import javax.swing.SwingUtilities;
 
 import javaplay.central.JBarra;
 import javaplay.central.JLista;
@@ -43,6 +38,7 @@ import javaplay.central.LongJSlider;
 import javaplay.outros.BancoComunicador;
 import javaplay.outros.Propriedades;
 import javaplay.player.mascara.MascaraPlayer;
+import javaplay.thread.PlayerControle;
 import uk.co.caprica.vlcj.player.base.ChapterDescription;
 import uk.co.caprica.vlcj.player.base.MarqueePosition;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
@@ -62,8 +58,8 @@ public class Player extends JFrame {
 
 	private EmbeddedMediaPlayer play;
 	private EmbeddedMediaPlayerComponent comp;
+	private PlayerControle controle;
 	private MascaraPlayer mascara;
-	private JPopupMenu pop;
 	private Progresso progresso;
 	private JPanel inferior;
 	private JFrame janela;
@@ -83,22 +79,21 @@ public class Player extends JFrame {
 		comp = new EmbeddedMediaListPlayerComponent();
 		inferior = new JPanel(new BorderLayout());
 		progresso = new Progresso();
-		pop = new JPopupMenu();
 		
 		mascara = masc;
 		janela = this;
 		play = comp.mediaPlayer();
+		controle = new PlayerControle(play);
 		this.lista = lista;
 
 		play.fullScreen().strategy(new AdaptiveFullScreenStrategy(janela));
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setLayout(new BorderLayout());
-		
+
 		setarPropriedades(masc);
-		configurarPopup();
 		configurarEventoDoPlayer(temp);
-		configurarEventoDaJanela(arq,con);
-		
+		configurarEventoDaJanela(arq, con);
+
 		inferior.add(progresso, BorderLayout.NORTH);
 
 		add(comp, BorderLayout.CENTER);
@@ -126,15 +121,7 @@ public class Player extends JFrame {
 		play.marquee().setColour(Color.yellow);
 		play.marquee().setTimeout(500);
 	}
-	private void configurarPopup() {
-		ListModel<JBarra> barras = lista.getModel();
-		JMenu eps = new JMenu("Lista");
-		for (int i = 0; i < barras.getSize();i++) {
-			eps.add(barras.getElementAt(i));
-		}
-		pop.setLightWeightPopupEnabled(true);
-		pop.add(eps);
-	}
+
 	private void configurarEventoDaJanela(Path arq, Consumer<Integer> con) {
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -155,13 +142,13 @@ public class Player extends JFrame {
 				int porc = (int) ((100 * atu) / max);
 				new Thread(() -> BancoComunicador.instancia.inserirResultado(porc, arq)).start();
 				con.accept(porc);
-				pop.setVisible(false);
 				lista.getPai().setVisible(true);
 				janela.dispose();
 				super.windowClosing(e);
 			}
 		});
 	}
+
 	private void configurarEventoDoPlayer(int temp) {
 		play.events().addMediaPlayerEventListener((new MediaPlayerEventAdapter() {
 			@Override
@@ -173,10 +160,13 @@ public class Player extends JFrame {
 				Dimension video = play.video().videoDimension();
 				janela.setSize(video.width, video.height + (inferior.getHeight() + inferior.getHeight() / 2));
 			}
+
 			@Override
 			public void lengthChanged(MediaPlayer mediaPlayer, long newLength) {
 				progresso.modificarFim(play.status().length());
-				play.controls().setPosition((float) temp / 100);
+				controlarPlayer((a) -> {
+					a.controls().setPosition((float) temp / 100);
+				});
 			}
 
 			@Override
@@ -211,15 +201,20 @@ public class Player extends JFrame {
 		comp.videoSurfaceComponent().addMouseWheelListener((a) -> {
 			ismult = a.isControlDown();
 			if (a.isShiftDown()) {
-				int skip = -(a.getWheelRotation()*10000)*(ismult?mult:1);
-				play.controls().skipTime(skip);
-			}else {
-				int vol = play.audio().volume() - (a.getWheelRotation() * (ismult ? mult : 1));
-				vol = confirmarVolume(vol);
-				audioMudanca = true;
-				play.audio().setVolume(vol);
+				controlarPlayer((aa) -> {
+					int skip = -(a.getWheelRotation() * 10000) * (ismult ? mult : 1);
+					play.controls().skipTime(skip);
+				});
+			} else {
+				controlarPlayer((aa) -> {
+					int vol = play.audio().volume() - (a.getWheelRotation() * (ismult ? mult : 1));
+					vol = confirmarVolume(vol);
+					audioMudanca = true;
+					aa.audio().setVolume(vol);
+				});
+
 			}
-			
+
 		});
 		comp.videoSurfaceComponent().addKeyListener(new KeyAdapter() {
 			@Override
@@ -227,28 +222,40 @@ public class Player extends JFrame {
 				ismult = e.isControlDown();
 				switch (e.getKeyCode()) {
 				case KeyEvent.VK_SPACE:
-					play.controls().pause();
+					controlarPlayer((a) -> {
+						a.controls().pause();
+					});
 					break;
 				case KeyEvent.VK_F:
-					play.fullScreen().set(!play.fullScreen().isFullScreen());
+					controlarPlayer((a) -> {
+						a.fullScreen().set(!play.fullScreen().isFullScreen());
+					});
 					break;
 				case KeyEvent.VK_LEFT:
-					play.controls().skipTime(-10000);
+					controlarPlayer((a) -> {
+						a.controls().skipTime(-10000);
+					});
 					break;
 				case KeyEvent.VK_RIGHT:
-					play.controls().skipTime(10000);
+					controlarPlayer((a) -> {
+						a.controls().skipTime(10000);
+					});
 					break;
 				case KeyEvent.VK_UP:
-					int vol = play.audio().volume() + (5 * (ismult ? mult : 1));
-					vol = confirmarVolume(vol);
-					audioMudanca = true;
-					play.audio().setVolume(vol);
+					controlarPlayer((a) -> {
+						int vol = a.audio().volume() + (5 * (ismult ? mult : 1));
+						vol = confirmarVolume(vol);
+						audioMudanca = true;
+						a.audio().setVolume(vol);
+					});
 					break;
 				case KeyEvent.VK_DOWN:
-					vol = play.audio().volume() - (5 * (ismult ? mult : 1));
-					vol = confirmarVolume(vol);
-					audioMudanca = true;
-					play.audio().setVolume(vol);
+					controlarPlayer((a) -> {
+						int vol = a.audio().volume() - (5 * (ismult ? mult : 1));
+						vol = confirmarVolume(vol);
+						audioMudanca = true;
+						a.audio().setVolume(vol);
+					});
 					break;
 				}
 			}
@@ -258,19 +265,12 @@ public class Player extends JFrame {
 				ismult = e.isControlDown();
 			}
 		});
-		comp.videoSurfaceComponent().addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (pop.isVisible()) {
-					pop.setVisible(false);
-					return;
-				}
-				if (SwingUtilities.isRightMouseButton(e)) {
-					pop.setVisible(true);
-					pop.setLocation(e.getXOnScreen(),e.getYOnScreen());
-				}
-			};
-		});
 	}
+
+	private void controlarPlayer(Consumer<EmbeddedMediaPlayer> con) {
+		controle.adicionar(con);
+	}
+
 	private int confirmarVolume(int vol) {
 		if (vol > 200) {
 			vol = 200;
@@ -279,6 +279,7 @@ public class Player extends JFrame {
 		}
 		return vol;
 	}
+
 	/**
 	 * Classe onde possui as JLabels inicio e fim (ini e fim) e a barra de progresso
 	 * 
@@ -303,13 +304,18 @@ public class Player extends JFrame {
 			barra.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					play.controls().setTime(barra.getLongValue());
-					play.controls().play();
+					controlarPlayer((a) -> {
+						a.controls().setTime(barra.getLongValue());
+						a.controls().play();
+					});
 				}
 
 				@Override
 				public void mousePressed(MouseEvent e) {
-					play.controls().pause();
+					controlarPlayer((a) -> {
+						a.controls().pause();
+					});
+
 				}
 			});
 			setLayout(new BorderLayout());
@@ -354,7 +360,6 @@ public class Player extends JFrame {
 			int ind = lista.getSelectedIndex();
 			if ((ind + 1) < lista.getModel().getSize()) {
 				new Thread(() -> {
-
 					JBarra barra = lista.getModel().getElementAt(ind + 1);
 					Consumer<Integer> ina = (b) -> {
 						barra.setValue(b);
@@ -377,7 +382,7 @@ public class Player extends JFrame {
 				noms = desc.name();
 				if (isPularAbertura) {
 					if (mascara.confirmarAberturaPulavel(noms)) {
-						play.chapters().setChapter(play.chapters().chapter()+1);
+						play.chapters().setChapter(play.chapters().chapter() + 1);
 					}
 				}
 				if (isProximoArquivo) {
@@ -426,10 +431,9 @@ public class Player extends JFrame {
 		}
 
 		private int tempodinamico(long ms) {
-			int secs, mins, horas;
+			int mins, horas;
 			horas = (int) (ms / 3600000);
 			mins = (int) (ms / 60000);
-			secs = (int) ((ms / 1000) % 60);
 			int count;
 			if (horas > 0) {
 				count = 2;

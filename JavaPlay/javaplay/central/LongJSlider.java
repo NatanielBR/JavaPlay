@@ -2,9 +2,7 @@
 package javaplay.central;
 
 import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.JMenuItem;
@@ -12,11 +10,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSlider;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
-
-import uk.co.caprica.vlcj.player.base.ChapterApi;
 
 /**
  * An extension of JSlider that uses Double for its values.

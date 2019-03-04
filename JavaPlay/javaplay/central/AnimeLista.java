@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -26,12 +25,9 @@ import com.sun.jna.NativeLibrary;
 import javaplay.central.mascara.MascaraCentral;
 import javaplay.outros.BancoComunicador;
 import javaplay.outros.Propriedades;
-import javaplay.outros.Utilitario;
 import javaplay.thread.DiretorioMonitor;
-import uk.co.caprica.vlcj.binding.LibVlc;
 import uk.co.caprica.vlcj.binding.RuntimeUtil;
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery;
-import uk.co.caprica.vlcj.support.Info;
 
 public class AnimeLista {
 
@@ -46,7 +42,7 @@ public class AnimeLista {
 	 */
 	public static void main(String[] args) {
 		new Propriedades();
-		boolean achou = new NativeDiscovery().discover();
+		new NativeDiscovery().discover();
 		NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:\\Program Files\\VideoLAN\\VLC");
 		for(Path di : FileSystems.getDefault().getRootDirectories()) {
 			String dir = di.toString();
@@ -166,28 +162,13 @@ public class AnimeLista {
 		JMenu mnSobre = new JMenu("Ajuda");
 		menuBar.add(mnSobre);
 
-		JMenuItem mntmNewMenuItem_1 = new JMenuItem("Vers√£o");
+		JMenuItem mntmNewMenuItem_1 = new JMenuItem("Vers„o");
 		mntmNewMenuItem_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new Sobre(frame);
 			}
 		});
 		mnSobre.add(mntmNewMenuItem_1);
-	}
-
-	private String escolherDiretorio() {
-		String dir = null;
-		JFileChooser chooser = new JFileChooser();
-		chooser.setCurrentDirectory(new java.io.File("."));
-		chooser.setDialogTitle("Escolha o diretorio");
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		chooser.setAcceptAllFileFilterUsed(false);
-		if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-			dir = chooser.getSelectedFile().getAbsolutePath();
-		} else {
-			System.exit(0);
-		}
-		return dir;
 	}
 
 }

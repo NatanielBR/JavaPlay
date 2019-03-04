@@ -3,6 +3,7 @@ package javaplay.central;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,10 +18,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
-import javax.swing.AbstractListModel;
-import java.awt.FlowLayout;
-import javax.swing.SwingConstants;
 
 public class CriarMascaraCentral extends JPanel {
 	private JTextField textoRegex;

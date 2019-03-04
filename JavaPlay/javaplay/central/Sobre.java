@@ -1,7 +1,6 @@
 package javaplay.central;
 
 import java.awt.BorderLayout;
-import java.awt.Dialog;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,8 +12,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
-
-import uk.co.caprica.vlcj.support.Info;
 
 public class Sobre extends JDialog {
 
@@ -32,7 +29,7 @@ public class Sobre extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(null);
 		
-		JLabel lblJavaplay = new JLabel("JavaPlay 2.1.3-9");
+		JLabel lblJavaplay = new JLabel("JavaPlay 2.1.3-10");
 		lblJavaplay.setBounds(12, 12, 129, 15);
 		contentPanel.add(lblJavaplay);
 		
